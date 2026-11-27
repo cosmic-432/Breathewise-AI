@@ -1,5 +1,6 @@
 import { Check, Plus } from 'lucide-react';
 import type { HouseholdProfile, ImpactActionType } from '../../types/index.ts';
+import { REGION_GRID_OPTIONS, REGION_GRID_VALUES } from '../../utils/constants.ts';
 import { isOneOf } from '../../utils/typeGuards.ts';
 
 export const IMPACT_ACTION_OPTIONS: ReadonlyArray<{
@@ -17,13 +18,6 @@ export const IMPACT_ACTION_OPTIONS: ReadonlyArray<{
 const IMPACT_ACTION_IDS: readonly ImpactActionType[] = IMPACT_ACTION_OPTIONS.map(
   (opt) => opt.id,
 );
-
-const REGION_GRID_VALUES: readonly HouseholdProfile['regionGrid'][] = [
-  'india',
-  'global',
-  'us',
-  'eu',
-];
 
 interface ImpactScenarioFormProps {
   actionType: ImpactActionType;
@@ -244,10 +238,11 @@ export function ImpactScenarioForm({
               }}
               className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm"
             >
-              <option value="india">India (CEA 0.727)</option>
-              <option value="global">Global Avg (0.436)</option>
-              <option value="us">US eGRID (0.373)</option>
-              <option value="eu">EU EEA (0.242)</option>
+              {REGION_GRID_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.shortLabel}
+                </option>
+              ))}
             </select>
           </div>
         </div>

@@ -20,6 +20,7 @@ import type {
   RecordedImpactAction,
   RoutineActivity,
 } from '../types/index.ts';
+import { createEntityId } from '../utils/id.ts';
 
 export const STORAGE_KEYS = {
   location: 'breathewise:location:v1',
@@ -143,6 +144,17 @@ const chatHistoryArraySchema = z.array(chatTurnSchema);
 const stringArraySchema = z.array(z.string());
 const clientTokenSchema = z.string().min(12).max(128);
 
+let lastStorageError: string | null = null;
+
+function recordStorageError(
+  operation: 'read' | 'write',
+  key: string,
+  err: unknown,
+): void {
+  const detail = err instanceof Error ? err.name : 'StorageError';
+  lastStorageError = `${operation}:${key}:${detail}`;
+}
+
 /**
  * Safely reads and validates persisted localStorage data against a Zod schema.
  * Falls back cleanly on missing, malformed, or schema-incompatible entries.
@@ -154,8 +166,13 @@ function safeRead<T>(key: string, schema: z.ZodType<T>, fallback: T): T {
     if (!raw) return fallback;
     const parsed: unknown = JSON.parse(raw);
     const result = schema.safeParse(parsed);
-    return result.success ? result.data : fallback;
-  } catch {
+    if (!result.success) {
+      lastStorageError = `schema:${key}:ValidationError`;
+      return fallback;
+    }
+    return result.data;
+  } catch (err: unknown) {
+    recordStorageError('read', key, err);
     return fallback;
   }
 }
@@ -164,8 +181,8 @@ function safeWrite<T>(key: string, value: T): void {
   if (typeof window === 'undefined') return;
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // Ignore storage quota or private-mode errors gracefully
+  } catch (err: unknown) {
+    recordStorageError('write', key, err);
   }
 }
 
@@ -227,7 +244,7 @@ export const localStore = {
     const no2 = snapshot.pollutants.find((p) => p.code === 'NO2')?.value ?? null;
 
     const record: HistoricalAqiRecord = {
-      id: `hist-${nowMs}-${Math.random().toString(36).slice(2, 7)}`,
+      id: createEntityId('hist'),
       recordedAt: snapshot.lastUpdated ?? snapshot.fetchedAt,
       locationId: snapshot.location.id,
       locationName: snapshot.location.neighborhood
@@ -289,10 +306,16 @@ export const localStore = {
     );
   },
 
+  getLastStorageError: (): string | null => lastStorageError,
+  clearLastStorageError: (): void => {
+    lastStorageError = null;
+  },
+
   clearAllUserData: (): void => {
     if (typeof window === 'undefined') return;
     Object.values(STORAGE_KEYS).forEach((k) => {
       window.localStorage.removeItem(k);
     });
+    lastStorageError = null;
   },
 };

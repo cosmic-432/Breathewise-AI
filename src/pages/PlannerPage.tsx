@@ -8,7 +8,7 @@ import {
 } from '../components/planner/plannerConstants.ts';
 import { RoutineActivityForm } from '../components/planner/RoutineActivityForm.tsx';
 import { RoutineBlockSection } from '../components/planner/RoutineBlockSection.tsx';
-import { StructuredAIResponseCard } from '../components/StructuredAIResponseCard.tsx';
+import { AiGuidanceCard } from '../components/AiGuidanceCard.tsx';
 import type { BreatheWiseState } from '../hooks/useBreatheWiseState.ts';
 import type {
   ActivityCategory,
@@ -17,6 +17,7 @@ import type {
   StructuredAIResponse,
   TimeBlock,
 } from '../types/index.ts';
+import { createEntityId } from '../utils/id.ts';
 import { generateRoutineRecommendation } from '../utils/routineEngine.ts';
 
 interface PlannerPageProps {
@@ -80,7 +81,7 @@ export function PlannerPage({ state }: PlannerPageProps) {
     }
     setFormError(null);
     const activityPayload: RoutineActivity = {
-      id: editingId ?? `rt-${Date.now()}`,
+      id: editingId ?? createEntityId('rt'),
       title: cleaned,
       category,
       preferredBlock,
@@ -184,35 +185,13 @@ export function PlannerPage({ state }: PlannerPageProps) {
         onCancelEdit={resetForm}
       />
 
-      {aiError && (
-        <div
-          role="alert"
-          className="rounded-xl border border-[#C94D53]/40 bg-[#FBECEE] p-4 text-sm text-[#962D32]"
-        >
-          {aiError}
-        </div>
-      )}
-
-      {aiPlan && (
-        <section
-          aria-label="Gemini personalized daily plan"
-          className="rounded-xl border border-[#237A57]/40 bg-white p-6 space-y-3"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-base font-semibold text-[#18543F]">
-              Gemini AI Personalized Routine Review
-            </h2>
-            <button
-              type="button"
-              onClick={() => setAiPlan(null)}
-              className="text-xs text-[#66786E] hover:text-[#20332B]"
-            >
-              Dismiss
-            </button>
-          </div>
-          <StructuredAIResponseCard response={aiPlan} />
-        </section>
-      )}
+      <AiGuidanceCard
+        title="Gemini AI Personalized Routine Review"
+        ariaLabel="Gemini personalized daily plan"
+        response={aiPlan}
+        error={aiError}
+        onDismiss={() => setAiPlan(null)}
+      />
 
       <div className="space-y-5">
         {TIME_BLOCKS.map((block) => (

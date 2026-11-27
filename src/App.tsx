@@ -1,23 +1,8 @@
 import { Suspense, lazy, useRef, useState } from 'react';
-import {
-  Activity,
-  BarChart3,
-  Bot,
-  CalendarClock,
-  HeartHandshake,
-  Home,
-  Leaf,
-  Map as MapIcon,
-  MapPin,
-  Menu,
-  Settings,
-  ShieldCheck,
-  Users,
-  Wind,
-  X,
-} from 'lucide-react';
+import { MapPin, Menu, X } from 'lucide-react';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import { LocationSelectorModal } from './components/LocationSelectorModal.tsx';
+import { NAV_ITEMS, SidebarNav } from './components/SidebarNav.tsx';
 import { useBreatheWiseState } from './hooks/useBreatheWiseState.ts';
 import { useFocusTrap } from './hooks/useFocusTrap.ts';
 import { OverviewPage } from './pages/OverviewPage.tsx';
@@ -62,24 +47,6 @@ const SettingsPage = lazy(() =>
   import('./pages/SettingsPage.tsx').then((m) => ({ default: m.SettingsPage })),
 );
 
-const NAV_ITEMS: Array<{
-  id: NavSection;
-  label: string;
-  icon: typeof Activity;
-}> = [
-  { id: 'overview', label: 'Overview', icon: Activity },
-  { id: 'assistant', label: 'AI Air Assistant', icon: Bot },
-  { id: 'map', label: 'Air Quality Map', icon: MapIcon },
-  { id: 'planner', label: 'Daily Planner', icon: CalendarClock },
-  { id: 'indoor', label: 'Indoor Air', icon: Home },
-  { id: 'family', label: 'Family Protection', icon: ShieldCheck },
-  { id: 'sustainable', label: 'Sustainable Choices', icon: Leaf },
-  { id: 'impact', label: 'My Impact', icon: BarChart3 },
-  { id: 'community', label: 'Community', icon: Users },
-  { id: 'history', label: 'Air Quality History', icon: HeartHandshake },
-  { id: 'settings', label: 'Settings', icon: Settings },
-];
-
 export default function App() {
   const state = useBreatheWiseState();
   const [activeSection, setActiveSection] = useState<NavSection>('overview');
@@ -108,66 +75,6 @@ export default function App() {
   const activeNavLabel =
     NAV_ITEMS.find((item) => item.id === activeSection)?.label ?? 'Overview';
 
-  const renderSidebarContent = () => (
-    <div className="flex h-full flex-col">
-      <div className="px-5 py-5 border-b border-[#E1EAE4]">
-        <button
-          type="button"
-          onClick={() => navigate('overview')}
-          className="flex items-center gap-2.5 text-left"
-        >
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#237A57] text-white shrink-0">
-            <Wind className="w-4 h-4" aria-hidden="true" />
-          </span>
-          <span className="text-lg font-bold tracking-tight text-[#20332B] font-display whitespace-nowrap">
-            BreatheWise AI
-          </span>
-        </button>
-      </div>
-
-      <div className="px-4 pt-4 pb-2">
-        <button
-          type="button"
-          onClick={() => navigate('assistant')}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#237A57] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#18543F] transition-colors whitespace-nowrap"
-        >
-          <Bot className="w-4 h-4 shrink-0" aria-hidden="true" />
-          <span>Ask BreatheWise AI</span>
-        </button>
-      </div>
-
-      <nav
-        aria-label="Primary navigation"
-        className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5"
-      >
-        {NAV_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeSection === item.id;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              aria-current={isActive ? 'page' : undefined}
-              onClick={() => navigate(item.id)}
-              className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
-                isActive
-                  ? 'bg-[#DDF1E6] text-[#18543F]'
-                  : 'text-[#66786E] hover:bg-[#F5F8F6] hover:text-[#20332B]'
-              }`}
-            >
-              <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
-              <span className="truncate">{item.label}</span>
-            </button>
-          );
-        })}
-      </nav>
-
-      <div className="border-t border-[#E1EAE4] px-5 py-3.5 text-xs text-[#66786E]">
-        Breathe smarter. Live healthier.
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-[#F5F8F6] text-[#20332B] flex">
       <a
@@ -183,25 +90,22 @@ export default function App() {
 
       {/* Persistent Desktop Sidebar */}
       <aside className="hidden lg:block w-64 shrink-0 border-r border-[#E1EAE4] bg-white sticky top-0 h-screen">
-        {renderSidebarContent()}
+        <SidebarNav activeSection={activeSection} onNavigate={navigate} />
       </aside>
 
       {/* Mobile Slide-Out Navigation Drawer */}
       {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-50 lg:hidden flex"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Navigation menu"
-        >
-          <button
-            type="button"
-            aria-label="Close navigation menu"
-            className="fixed inset-0 bg-[#20332B]/40 border-0 p-0 cursor-default"
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          <div
+            aria-hidden="true"
+            className="fixed inset-0 bg-[#20332B]/40"
             onClick={() => setMobileMenuOpen(false)}
           />
           <div
             ref={mobileDrawerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation menu"
             className="relative z-10 w-72 max-w-[85vw] bg-white h-full border-r border-[#E1EAE4] shadow-xl flex flex-col"
           >
             <button
@@ -210,9 +114,9 @@ export default function App() {
               aria-label="Close navigation menu"
               className="absolute right-3 top-4 inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#66786E] hover:bg-[#F5F8F6]"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5" aria-hidden="true" />
             </button>
-            {renderSidebarContent()}
+            <SidebarNav activeSection={activeSection} onNavigate={navigate} />
           </div>
         </div>
       )}
@@ -226,9 +130,10 @@ export default function App() {
               type="button"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open navigation menu"
+              aria-expanded={mobileMenuOpen}
               className="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg text-[#20332B] hover:bg-[#F5F8F6] shrink-0"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-5 h-5" aria-hidden="true" />
             </button>
             <div className="flex items-center gap-2 text-sm min-w-0">
               <span className="text-[#66786E] hidden sm:inline whitespace-nowrap">

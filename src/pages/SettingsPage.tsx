@@ -3,6 +3,7 @@ import { Download, MapPin, Trash2 } from 'lucide-react';
 import type { BreatheWiseState } from '../hooks/useBreatheWiseState.ts';
 import { localStore } from '../storage/localStore.ts';
 import type { HouseholdProfile } from '../types/index.ts';
+import { REGION_GRID_OPTIONS, REGION_GRID_VALUES } from '../utils/constants.ts';
 import { isOneOf } from '../utils/typeGuards.ts';
 
 interface SettingsPageProps {
@@ -13,13 +14,6 @@ interface SettingsPageProps {
 const UNIT_SYSTEM_OPTIONS: readonly HouseholdProfile['preferredUnitSystem'][] = [
   'metric',
   'imperial',
-];
-
-const REGION_GRID_OPTIONS: readonly HouseholdProfile['regionGrid'][] = [
-  'india',
-  'global',
-  'us',
-  'eu',
 ];
 
 export function SettingsPage({ state, onOpenLocationModal }: SettingsPageProps) {
@@ -133,7 +127,7 @@ export function SettingsPage({ state, onOpenLocationModal }: SettingsPageProps) 
               id="settings-grid"
               value={household.regionGrid}
               onChange={(e) => {
-                if (isOneOf(e.target.value, REGION_GRID_OPTIONS)) {
+                if (isOneOf(e.target.value, REGION_GRID_VALUES)) {
                   setHousehold({
                     ...household,
                     regionGrid: e.target.value,
@@ -142,10 +136,11 @@ export function SettingsPage({ state, onOpenLocationModal }: SettingsPageProps) 
               }}
               className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm text-[#20332B]"
             >
-              <option value="india">India — CEA v19 (0.727 kg CO2/kWh)</option>
-              <option value="global">Global Average — IEA (0.436 kg CO2/kWh)</option>
-              <option value="us">United States — EPA eGRID (0.373 kg CO2/kWh)</option>
-              <option value="eu">European Union — EEA (0.242 kg CO2/kWh)</option>
+              {REGION_GRID_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.detailedLabel}
+                </option>
+              ))}
             </select>
           </div>
         </div>

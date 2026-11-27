@@ -1,4 +1,4 @@
-import { useEffect, type RefObject } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 
 const FOCUSABLE_SELECTOR = [
   'a[href]',
@@ -8,6 +8,14 @@ const FOCUSABLE_SELECTOR = [
   'textarea:not([disabled])',
   '[tabindex]:not([tabindex="-1"])',
 ].join(', ');
+
+function isElementVisible(el: HTMLElement): boolean {
+  if (el.hidden || el.getAttribute('aria-hidden') === 'true') {
+    return false;
+  }
+  const style = window.getComputedStyle(el);
+  return style.display !== 'none' && style.visibility !== 'hidden';
+}
 
 /**
  * WCAG 2.2 AA focus trap for dialogs and navigation drawers.
@@ -19,6 +27,11 @@ export function useFocusTrap(
   isOpen: boolean,
   onEscape?: () => void,
 ): void {
+  const onEscapeRef = useRef(onEscape);
+  useEffect(() => {
+    onEscapeRef.current = onEscape;
+  }, [onEscape]);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -27,21 +40,23 @@ export function useFocusTrap(
 
     const container = containerRef.current;
     if (container) {
-      const first = container.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+      const first = Array.from(
+        container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      ).find(isElementVisible);
       first?.focus();
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && onEscape) {
+      if (event.key === 'Escape' && onEscapeRef.current) {
         event.preventDefault();
-        onEscape();
+        onEscapeRef.current();
         return;
       }
       if (event.key !== 'Tab' || !containerRef.current) return;
 
       const focusables = Array.from(
         containerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
-      ).filter((el) => el.offsetParent !== null);
+      ).filter(isElementVisible);
 
       if (focusables.length === 0) return;
 
@@ -70,5 +85,5 @@ export function useFocusTrap(
       window.removeEventListener('keydown', handleKeyDown);
       previouslyFocused?.focus();
     };
-  }, [containerRef, isOpen, onEscape]);
+  }, [containerRef, isOpen]);
 }

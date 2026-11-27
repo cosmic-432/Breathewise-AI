@@ -12,6 +12,7 @@ import type {
   ImpactActionType,
   RecordedImpactAction,
 } from '../types/index.ts';
+import { createEntityId } from '../utils/id.ts';
 import { calculateEnvironmentalImpact } from '../utils/impactCalculator.ts';
 
 interface ImpactCalculatorPageProps {
@@ -79,7 +80,7 @@ export function ImpactCalculatorPage({ state }: ImpactCalculatorPageProps) {
     const label =
       IMPACT_ACTION_OPTIONS.find((a) => a.id === actionType)?.label ?? actionType;
     const entry: RecordedImpactAction = {
-      id: `imp-${Date.now()}`,
+      id: createEntityId('imp'),
       type: actionType,
       label,
       dateIso: new Date().toISOString(),

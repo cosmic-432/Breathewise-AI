@@ -5,6 +5,7 @@ import { AqiStatusIndicator } from '../components/AqiStatusBadge.tsx';
 import { StructuredAIResponseCard } from '../components/StructuredAIResponseCard.tsx';
 import type { BreatheWiseState } from '../hooks/useBreatheWiseState.ts';
 import type { ChatTurn } from '../types/index.ts';
+import { createEntityId } from '../utils/id.ts';
 
 interface AssistantPageProps {
   state: BreatheWiseState;
@@ -18,15 +19,12 @@ const EXAMPLE_PROMPTS = [
   'Explain today’s pollutant readings in plain language and what they mean for children playing outdoors.',
 ];
 
-let turnSequence = 0;
-
 function createChatTurn(
   prefix: 'usr' | 'ast' | 'err',
   fields: Omit<ChatTurn, 'id' | 'createdAt'>,
 ): ChatTurn {
-  turnSequence += 1;
   return {
-    id: `${prefix}-${Date.now()}-${turnSequence}`,
+    id: createEntityId(prefix),
     createdAt: new Date().toISOString(),
     ...fields,
   };
@@ -253,7 +251,7 @@ export function AssistantPage({ state, onOpenLocationModal }: AssistantPageProps
               onChange={(e) => setInput(e.target.value)}
               maxLength={1200}
               placeholder="Ask about commuting, elderly care, indoor ventilation, or lower-emission routines..."
-              className="flex-1 rounded-lg border border-[#E1EAE4] bg-white px-4 py-2.5 text-sm text-[#20332B] placeholder:text-[#66786E] focus:border-[#237A57] focus:outline-none"
+              className="flex-1 rounded-lg border border-[#E1EAE4] bg-white px-4 py-2.5 text-sm text-[#20332B] placeholder:text-[#66786E] focus:border-[#237A57] focus:ring-2 focus:ring-[#237A57]/25"
             />
             <button
               type="submit"

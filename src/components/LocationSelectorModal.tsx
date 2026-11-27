@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { LocateFixed, MapPin, Search, X } from 'lucide-react';
 import { apiClient } from '../api/client.ts';
 import { useFocusTrap } from '../hooks/useFocusTrap.ts';
+import { useLocationPresets } from '../hooks/useLocationPresets.ts';
 import type { LocationSelection } from '../types/index.ts';
 
 interface LocationSelectorModalProps {
@@ -18,7 +19,7 @@ export function LocationSelectorModal({
   onClose,
 }: LocationSelectorModalProps) {
   const [query, setQuery] = useState('');
-  const [presets, setPresets] = useState<LocationSelection[]>([]);
+  const { presets } = useLocationPresets(isOpen);
   const [results, setResults] = useState<LocationSelection[]>([]);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,18 +32,6 @@ export function LocationSelectorModal({
   useEffect(() => {
     if (!isOpen) return;
     inputRef.current?.focus();
-
-    const controller = new AbortController();
-    apiClient
-      .fetchPresets(controller.signal)
-      .then(setPresets)
-      .catch(() => {
-        // Ignore abort errors
-      });
-
-    return () => {
-      controller.abort();
-    };
   }, [isOpen]);
 
   useEffect(() => {
@@ -53,7 +42,7 @@ export function LocationSelectorModal({
     }
 
     const controller = new AbortController();
-    const timer = setTimeout(async () => {
+    const runSearch = async (): Promise<void> => {
       setSearching(true);
       setError(null);
       try {
@@ -67,6 +56,9 @@ export function LocationSelectorModal({
       } finally {
         setSearching(false);
       }
+    };
+    const timer = setTimeout(() => {
+      void runSearch();
     }, 300);
 
     return () => {
@@ -117,11 +109,10 @@ export function LocationSelectorModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <button
-        type="button"
-        aria-label="Close location selector"
+      <div
+        aria-hidden="true"
         onClick={onClose}
-        className="fixed inset-0 bg-[#20332B]/40 border-0 p-0 cursor-default"
+        className="fixed inset-0 bg-[#20332B]/40"
       />
       <div
         ref={dialogRef}
@@ -148,7 +139,7 @@ export function LocationSelectorModal({
             aria-label="Close location selector"
             className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#66786E] hover:bg-[#F5F8F6] hover:text-[#20332B] transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
@@ -179,7 +170,7 @@ export function LocationSelectorModal({
                   }
                 }}
                 placeholder="e.g., Delhi, Gurugram, Pune, Bengaluru, London..."
-                className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] pl-10 pr-4 py-2.5 text-sm text-[#20332B] placeholder:text-[#66786E] focus:bg-white focus:border-[#237A57] focus:outline-none"
+                className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] pl-10 pr-4 py-2.5 text-sm text-[#20332B] placeholder:text-[#66786E] focus:bg-white focus:border-[#237A57] focus:ring-2 focus:ring-[#237A57]/25"
               />
             </div>
 

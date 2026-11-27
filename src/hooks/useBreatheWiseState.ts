@@ -20,6 +20,11 @@ import type {
   RoutineActivity,
 } from '../types/index.ts';
 
+interface FetchRequestState {
+  nonce: number;
+  bypassCache: boolean;
+}
+
 export function useBreatheWiseState() {
   const [location, setLocationState] = useState<LocationSelection>(() =>
     localStore.getLocation(),
@@ -27,6 +32,10 @@ export function useBreatheWiseState() {
   const [snapshot, setSnapshot] = useState<AirQualitySnapshot | null>(null);
   const [loadingAqi, setLoadingAqi] = useState<boolean>(true);
   const [aqiError, setAqiError] = useState<string | null>(null);
+  const [fetchRequest, setFetchRequest] = useState<FetchRequestState>({
+    nonce: 0,
+    bypassCache: false,
+  });
 
   const [household, setHouseholdState] = useState<HouseholdProfile>(() =>
     localStore.getHousehold(),
@@ -52,49 +61,6 @@ export function useBreatheWiseState() {
 
   const abortRef = useRef<AbortController | null>(null);
 
-  const fetchForLocation = useCallback(
-    async (loc: LocationSelection, refresh: boolean, controller: AbortController) => {
-      try {
-        const data = await apiClient.fetchAirQuality(loc, {
-          refresh,
-          signal: controller.signal,
-        });
-        if (abortRef.current !== controller) return;
-        setSnapshot(data);
-        setAqiError(null);
-        const updatedHistory = localStore.recordVerifiedAqiSnapshot(data);
-        setAqiHistory(updatedHistory);
-      } catch (err) {
-        if (err instanceof DOMException && err.name === 'AbortError') {
-          return;
-        }
-        if (abortRef.current !== controller) return;
-        setAqiError(
-          err instanceof Error
-            ? err.message
-            : 'Unable to fetch air-quality data right now.',
-        );
-      } finally {
-        if (abortRef.current === controller) {
-          setLoadingAqi(false);
-        }
-      }
-    },
-    [],
-  );
-
-  const loadAirQuality = useCallback(
-    async (loc: LocationSelection, refresh: boolean = false) => {
-      abortRef.current?.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
-      setLoadingAqi(true);
-      setAqiError(null);
-      await fetchForLocation(loc, refresh, controller);
-    },
-    [fetchForLocation],
-  );
-
   useEffect(() => {
     abortRef.current?.abort();
     const controller = new AbortController();
@@ -102,7 +68,7 @@ export function useBreatheWiseState() {
 
     apiClient
       .fetchAirQuality(location, {
-        refresh: false,
+        refresh: fetchRequest.bypassCache,
         signal: controller.signal,
       })
       .then((data) => {
@@ -132,13 +98,20 @@ export function useBreatheWiseState() {
     return () => {
       controller.abort();
     };
-  }, [location]);
+  }, [location, fetchRequest]);
 
   const setLocation = useCallback((next: LocationSelection) => {
     localStore.setLocation(next);
     setLoadingAqi(true);
     setAqiError(null);
     setLocationState(next);
+    setFetchRequest((prev) => ({ nonce: prev.nonce + 1, bypassCache: false }));
+  }, []);
+
+  const refreshAirQuality = useCallback(() => {
+    setLoadingAqi(true);
+    setAqiError(null);
+    setFetchRequest((prev) => ({ nonce: prev.nonce + 1, bypassCache: true }));
   }, []);
 
   const setHousehold = useCallback((next: HouseholdProfile) => {
@@ -198,6 +171,9 @@ export function useBreatheWiseState() {
     setImpactActionsState([]);
     setAqiHistory([]);
     setChatTurnsState([]);
+    setLoadingAqi(true);
+    setAqiError(null);
+    setFetchRequest((prev) => ({ nonce: prev.nonce + 1, bypassCache: false }));
   }, []);
 
   return {
@@ -206,7 +182,7 @@ export function useBreatheWiseState() {
     snapshot,
     loadingAqi,
     aqiError,
-    refreshAirQuality: () => loadAirQuality(location, true),
+    refreshAirQuality,
     household,
     setHousehold,
     routines,

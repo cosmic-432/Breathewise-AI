@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { MapPin } from 'lucide-react';
-import { apiClient } from '../api/client.ts';
 import { AqiStatusIndicator } from '../components/AqiStatusBadge.tsx';
 import type { BreatheWiseState } from '../hooks/useBreatheWiseState.ts';
-import type { LocationSelection } from '../types/index.ts';
+import { useLocationPresets } from '../hooks/useLocationPresets.ts';
 import { interpretAqi } from '../utils/aqi.ts';
 
 interface MapPageProps {
@@ -21,18 +20,7 @@ export function MapPage({ state, onOpenLocationModal }: MapPageProps) {
     location.latitude,
     location.longitude,
   ]);
-  const [presets, setPresets] = useState<LocationSelection[]>([]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    apiClient
-      .fetchPresets(controller.signal)
-      .then(setPresets)
-      .catch(() => {
-        // Ignore abort
-      });
-    return () => controller.abort();
-  }, []);
+  const { presets } = useLocationPresets(true);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;

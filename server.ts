@@ -29,6 +29,14 @@ export interface ServerDependencies {
   apiRateLimitMax?: number;
 }
 
+function asyncHandler(
+  fn: (req: Request, res: Response, next: NextFunction) => Promise<void>,
+): (req: Request, res: Response, next: NextFunction) => void {
+  return (req, res, next) => {
+    void fn(req, res, next).catch(next);
+  };
+}
+
 export function createServerApp(deps?: ServerDependencies): Express {
   const app = express();
   app.disable('x-powered-by');
@@ -102,8 +110,10 @@ export function createServerApp(deps?: ServerDependencies): Express {
     res.json({ locations: PRESET_LOCATIONS });
   });
 
-  app.get('/api/geocode', apiLimiter.middleware, async (req, res, next) => {
-    try {
+  app.get(
+    '/api/geocode',
+    apiLimiter.middleware,
+    asyncHandler(async (req, res) => {
       const parsed = geocodeQuerySchema.safeParse(req.query);
       if (!parsed.success) {
         res.status(400).json({
@@ -114,13 +124,13 @@ export function createServerApp(deps?: ServerDependencies): Express {
       }
       const results = await airQualityService.searchLocations(parsed.data.q);
       res.json({ results });
-    } catch (err) {
-      next(err);
-    }
-  });
+    }),
+  );
 
-  app.get('/api/air-quality', apiLimiter.middleware, async (req, res, next) => {
-    try {
+  app.get(
+    '/api/air-quality',
+    apiLimiter.middleware,
+    asyncHandler(async (req, res) => {
       const parsed = coordinatesQuerySchema.safeParse(req.query);
       if (!parsed.success) {
         res.status(400).json({
@@ -148,13 +158,13 @@ export function createServerApp(deps?: ServerDependencies): Express {
       const snapshot = await airQualityService.getSnapshot(location, bypassCache);
       res.setHeader('Cache-Control', 'no-store');
       res.json(snapshot);
-    } catch (err) {
-      next(err);
-    }
-  });
+    }),
+  );
 
-  app.post('/api/ai/assist', aiLimiter.middleware, async (req, res, next) => {
-    try {
+  app.post(
+    '/api/ai/assist',
+    aiLimiter.middleware,
+    asyncHandler(async (req, res) => {
       const parsed = aiAssistantRequestSchema.safeParse(req.body);
       if (!parsed.success) {
         res.status(400).json({
@@ -164,19 +174,21 @@ export function createServerApp(deps?: ServerDependencies): Express {
         return;
       }
 
-      const structured = await geminiService.generateGuidance(parsed.data);
-      res.json({ response: structured });
-    } catch (err) {
-      if (err instanceof GeminiServiceError) {
-        res.status(err.statusCode).json({
-          error: err.message,
-          code: err.code,
-        });
-        return;
+      try {
+        const structured = await geminiService.generateGuidance(parsed.data);
+        res.json({ response: structured });
+      } catch (err) {
+        if (err instanceof GeminiServiceError) {
+          res.status(err.statusCode).json({
+            error: err.message,
+            code: err.code,
+          });
+          return;
+        }
+        throw err;
       }
-      next(err);
-    }
-  });
+    }),
+  );
 
   app.get('/api/community', apiLimiter.middleware, (_req, res) => {
     res.json(communityStore.getSummary());

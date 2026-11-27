@@ -1,14 +1,9 @@
-import { useMemo, useState } from 'react';
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Suspense, lazy, useMemo, useState } from 'react';
 import type { HourlyAqiPoint } from '../../types/index.ts';
+
+const ForecastAreaChart = lazy(() =>
+  import('./ForecastAreaChart.tsx').then((m) => ({ default: m.ForecastAreaChart })),
+);
 
 interface ForecastOutlookCardProps {
   locationName: string;
@@ -103,42 +98,15 @@ export function ForecastOutlookCard({
           role="img"
           aria-label={`Hourly AQI forecast for ${locationName}, ranging from ${Math.min(...aqiValues)} to ${Math.max(...aqiValues)}.`}
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={chartData}
-              margin={{ top: 10, right: 12, left: -12, bottom: 0 }}
-            >
-              <defs>
-                <linearGradient id="aqiAreaFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#237A57" stopOpacity={0.22} />
-                  <stop offset="95%" stopColor="#237A57" stopOpacity={0.02} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E1EAE4" />
-              <XAxis
-                dataKey="time"
-                tick={{ fill: '#66786E', fontSize: 12 }}
-                tickLine={false}
-              />
-              <YAxis tick={{ fill: '#66786E', fontSize: 12 }} tickLine={false} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#FFFFFF',
-                  borderColor: '#E1EAE4',
-                  borderRadius: '8px',
-                  fontSize: '12px',
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="aqi"
-                name="Forecast AQI"
-                stroke="#237A57"
-                strokeWidth={2}
-                fill="url(#aqiAreaFill)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <Suspense
+            fallback={
+              <div className="h-full w-full rounded-lg bg-[#F5F8F6] flex items-center justify-center text-xs text-[#66786E]">
+                Loading forecast chart...
+              </div>
+            }
+          >
+            <ForecastAreaChart chartData={chartData} />
+          </Suspense>
         </div>
       )}
     </section>

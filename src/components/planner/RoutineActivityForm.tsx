@@ -76,7 +76,7 @@ export function RoutineActivityForm({
               aria-invalid={Boolean(formError)}
               aria-describedby={formError ? 'routine-form-error' : undefined}
               placeholder="e.g., Morning jog, School drop-off"
-              className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3.5 py-2 text-sm text-[#20332B] focus:bg-white focus:border-[#237A57] focus:outline-none"
+              className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3.5 py-2 text-sm text-[#20332B] focus:bg-white focus:border-[#237A57] focus:ring-2 focus:ring-[#237A57]/25"
             />
           </div>
 
@@ -95,7 +95,7 @@ export function RoutineActivityForm({
                   onCategoryChange(e.target.value);
                 }
               }}
-              className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm text-[#20332B] focus:bg-white focus:border-[#237A57] focus:outline-none"
+              className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm text-[#20332B] focus:bg-white focus:border-[#237A57] focus:ring-2 focus:ring-[#237A57]/25"
             >
               {ACTIVITY_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -120,7 +120,7 @@ export function RoutineActivityForm({
                   onPreferredBlockChange(e.target.value);
                 }
               }}
-              className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm text-[#20332B] focus:bg-white focus:border-[#237A57] focus:outline-none"
+              className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm text-[#20332B] focus:bg-white focus:border-[#237A57] focus:ring-2 focus:ring-[#237A57]/25"
             >
               {TIME_BLOCKS.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -145,7 +145,7 @@ export function RoutineActivityForm({
                   onCurrentTransportChange(e.target.value);
                 }
               }}
-              className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm text-[#20332B] focus:bg-white focus:border-[#237A57] focus:outline-none"
+              className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm text-[#20332B] focus:bg-white focus:border-[#237A57] focus:ring-2 focus:ring-[#237A57]/25"
             >
               <option value="public_transit">Public Transit / Metro</option>
               <option value="car_solo">Solo Car</option>

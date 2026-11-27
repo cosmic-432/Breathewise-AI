@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import type { KeyboardEvent } from 'react';
+import { useRef, useState } from 'react';
 import { AlertTriangle, ArrowRight } from 'lucide-react';
 import { apiClient } from '../api/client.ts';
-import { StructuredAIResponseCard } from '../components/StructuredAIResponseCard.tsx';
+import { AiGuidanceCard } from '../components/AiGuidanceCard.tsx';
 import type { BreatheWiseState } from '../hooks/useBreatheWiseState.ts';
 import type {
   NavSection,
@@ -18,12 +19,40 @@ interface SustainableChoicesPageProps {
 
 type CategoryFilter = 'all' | SustainableAlternativeItem['category'];
 
+const CATEGORY_TABS: ReadonlyArray<{ id: CategoryFilter; label: string }> = [
+  { id: 'all', label: 'All Categories' },
+  { id: 'transportation', label: 'Transportation' },
+  { id: 'household', label: 'Household' },
+  { id: 'community', label: 'Community' },
+];
+
 export function SustainableChoicesPage({
   state,
   onNavigate,
 }: SustainableChoicesPageProps) {
   const { snapshot, household } = state;
   const [filter, setFilter] = useState<CategoryFilter>('all');
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let nextIndex: number | null = null;
+    if (event.key === 'ArrowRight') {
+      nextIndex = (index + 1) % CATEGORY_TABS.length;
+    } else if (event.key === 'ArrowLeft') {
+      nextIndex = (index - 1 + CATEGORY_TABS.length) % CATEGORY_TABS.length;
+    } else if (event.key === 'Home') {
+      nextIndex = 0;
+    } else if (event.key === 'End') {
+      nextIndex = CATEGORY_TABS.length - 1;
+    }
+    if (nextIndex === null) return;
+    event.preventDefault();
+    const targetTab = CATEGORY_TABS[nextIndex];
+    if (targetTab) {
+      setFilter(targetTab.id);
+      tabRefs.current[nextIndex]?.focus();
+    }
+  };
   const [aiIdeas, setAiIdeas] = useState<StructuredAIResponse | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
@@ -89,29 +118,32 @@ export function SustainableChoicesPage({
           aria-label="Filter sustainable alternatives by category"
           className="inline-flex items-center gap-1 rounded-lg bg-[#E9F0EC] p-1 self-start"
         >
-          {(
-            [
-              { id: 'all', label: 'All Categories' },
-              { id: 'transportation', label: 'Transportation' },
-              { id: 'household', label: 'Household' },
-              { id: 'community', label: 'Community' },
-            ] as const
-          ).map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              aria-selected={filter === tab.id}
-              onClick={() => setFilter(tab.id)}
-              className={`rounded-md px-3.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
-                filter === tab.id
-                  ? 'bg-white text-[#18543F] shadow-xs'
-                  : 'text-[#66786E] hover:text-[#20332B]'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {CATEGORY_TABS.map((tab, index) => {
+            const isSelected = filter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                ref={(el) => {
+                  tabRefs.current[index] = el;
+                }}
+                id={`sustainable-tab-${tab.id}`}
+                type="button"
+                role="tab"
+                aria-selected={isSelected}
+                aria-controls="sustainable-alternatives-panel"
+                tabIndex={isSelected ? 0 : -1}
+                onClick={() => setFilter(tab.id)}
+                onKeyDown={(e) => handleTabKeyDown(e, index)}
+                className={`rounded-md px-3.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
+                  isSelected
+                    ? 'bg-white text-[#18543F] shadow-xs'
+                    : 'text-[#66786E] hover:text-[#20332B]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
         <p className="text-xs text-[#66786E] max-w-md">
@@ -121,35 +153,21 @@ export function SustainableChoicesPage({
         </p>
       </div>
 
-      {aiError && (
-        <div
-          role="alert"
-          className="rounded-xl border border-[#C94D53]/40 bg-[#FBECEE] p-4 text-sm text-[#962D32]"
-        >
-          {aiError}
-        </div>
-      )}
-
-      {aiIdeas && (
-        <section className="rounded-xl border border-[#237A57]/40 bg-white p-6 space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="text-base font-semibold text-[#18543F]">
-              Gemini Personalized Sustainable Recommendations
-            </h2>
-            <button
-              type="button"
-              onClick={() => setAiIdeas(null)}
-              className="text-xs text-[#66786E] hover:text-[#20332B]"
-            >
-              Dismiss
-            </button>
-          </div>
-          <StructuredAIResponseCard response={aiIdeas} />
-        </section>
-      )}
+      <AiGuidanceCard
+        title="Gemini Personalized Sustainable Recommendations"
+        response={aiIdeas}
+        error={aiError}
+        onDismiss={() => setAiIdeas(null)}
+      />
 
       {/* Alternatives List */}
-      <div className="space-y-4">
+      <div
+        id="sustainable-alternatives-panel"
+        role="tabpanel"
+        aria-labelledby={`sustainable-tab-${filter}`}
+        tabIndex={0}
+        className="space-y-4"
+      >
         {filtered.map((item) => (
           <article
             key={item.id}

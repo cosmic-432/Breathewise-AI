@@ -39,6 +39,23 @@ export default tseslint.config(
     },
   },
   {
+    files: ['src/**/*.{ts,tsx}', 'server.ts'],
+    ignores: ['src/tests/**'],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        { checksVoidReturn: { attributes: false } },
+      ],
+    },
+  },
+  {
     files: ['server.ts'],
     rules: {
       'no-console': 'off',
