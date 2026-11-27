@@ -92,7 +92,8 @@ export interface RoutineActivity {
   preferredBlock: TimeBlock;
   durationMinutes: number;
   isOutdoor: boolean;
-  currentTransport?: 'car_solo' | 'carpool' | 'two_wheeler' | 'public_transit' | 'walk_cycle' | 'none';
+  currentTransport?:
+    'car_solo' | 'carpool' | 'two_wheeler' | 'public_transit' | 'walk_cycle' | 'none';
   notes?: string;
 }
 
@@ -115,7 +116,8 @@ export interface IndoorConditions {
   ventilation: 'closed' | 'natural_windows' | 'exhaust_fans' | 'mechanical_hvac';
   nearbySources: string[];
   hasPurifier: boolean;
-  filterType: 'none' | 'true_hepa' | 'hepa_carbon' | 'basic_dust' | 'ionizer_ozone' | 'unknown';
+  filterType:
+    'none' | 'true_hepa' | 'hepa_carbon' | 'basic_dust' | 'ionizer_ozone' | 'unknown';
   indoorHumidityPercent?: number | null;
   cookingFuel: 'electric_induction' | 'lpg_piped_gas' | 'solid_biomass_coal' | 'mixed';
   usesIncenseOrCandles: boolean;

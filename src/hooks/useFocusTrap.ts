@@ -23,9 +23,7 @@ export function useFocusTrap(
     if (!isOpen) return;
 
     const previouslyFocused =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
     const container = containerRef.current;
     if (container) {
@@ -51,7 +49,10 @@ export function useFocusTrap(
       const last = focusables[focusables.length - 1];
 
       if (event.shiftKey) {
-        if (document.activeElement === first || !containerRef.current.contains(document.activeElement)) {
+        if (
+          document.activeElement === first ||
+          !containerRef.current.contains(document.activeElement)
+        ) {
           event.preventDefault();
           last.focus();
         }

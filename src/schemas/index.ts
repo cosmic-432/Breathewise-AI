@@ -4,9 +4,25 @@ import { z } from 'zod';
  * Strips control characters and common prompt-injection framing patterns
  * before forwarding untrusted user strings to Gemini.
  */
+function stripControlChars(value: string): string {
+  let result = '';
+  for (let i = 0; i < value.length; i += 1) {
+    const code = value.charCodeAt(i);
+    const isDisallowedControl =
+      (code >= 0x00 && code <= 0x08) ||
+      code === 0x0b ||
+      code === 0x0c ||
+      (code >= 0x0e && code <= 0x1f) ||
+      code === 0x7f;
+    if (!isDisallowedControl) {
+      result += value[i];
+    }
+  }
+  return result;
+}
+
 export function sanitizeUserText(input: string): string {
-  return input
-    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+  return stripControlChars(input)
     .replace(/<\/?(system|assistant|developer|instructions?)>/gi, '')
     .trim();
 }
@@ -73,14 +89,7 @@ export const routineActivitySchema = z.object({
   durationMinutes: z.number().int().min(5).max(720),
   isOutdoor: z.boolean(),
   currentTransport: z
-    .enum([
-      'car_solo',
-      'carpool',
-      'two_wheeler',
-      'public_transit',
-      'walk_cycle',
-      'none',
-    ])
+    .enum(['car_solo', 'carpool', 'two_wheeler', 'public_transit', 'walk_cycle', 'none'])
     .optional(),
   notes: z.string().trim().max(240).optional(),
 });
@@ -88,12 +97,7 @@ export const routineActivitySchema = z.object({
 export const indoorConditionsSchema = z.object({
   roomSizeSqm: z.number().min(4).max(500),
   occupants: z.number().int().min(1).max(30),
-  ventilation: z.enum([
-    'closed',
-    'natural_windows',
-    'exhaust_fans',
-    'mechanical_hvac',
-  ]),
+  ventilation: z.enum(['closed', 'natural_windows', 'exhaust_fans', 'mechanical_hvac']),
   nearbySources: z.array(z.string().max(80)).max(10),
   hasPurifier: z.boolean(),
   filterType: z.enum([
@@ -218,11 +222,7 @@ export function containsPotentialPii(text: string): boolean {
   };
   const streetPattern =
     /\b(?:house\s*(?:no\.?|#)|flat\s*(?:no\.?|#)|apt\.?\s*#?\d+|door\s*no\.?|\d{1,5}\s+[A-Za-z]+\s+(?:street|st\.?|road|rd\.?|lane|ln\.?|avenue|ave\.?|boulevard|blvd\.?))\b/i;
-  return (
-    emailPattern.test(text) ||
-    hasPhoneLikeDigits(text) ||
-    streetPattern.test(text)
-  );
+  return emailPattern.test(text) || hasPhoneLikeDigits(text) || streetPattern.test(text);
 }
 
 export const communityReportSchema = z

@@ -49,8 +49,6 @@ export function LocationSelectorModal({
     if (!isOpen) return;
     const trimmed = query.trim();
     if (trimmed.length < 2) {
-      setResults([]);
-      setError(null);
       return;
     }
 
@@ -79,7 +77,9 @@ export function LocationSelectorModal({
 
   const handleUseDeviceLocation = () => {
     if (!('geolocation' in navigator)) {
-      setError('Device geolocation is not supported in this browser. Choose a city manually below.');
+      setError(
+        'Device geolocation is not supported in this browser. Choose a city manually below.',
+      );
       return;
     }
     setLocating(true);
@@ -116,18 +116,19 @@ export function LocationSelectorModal({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#20332B]/40 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="location-modal-title"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <button
+        type="button"
+        aria-label="Close location selector"
+        onClick={onClose}
+        className="fixed inset-0 bg-[#20332B]/40 border-0 p-0 cursor-default"
+      />
       <div
         ref={dialogRef}
-        className="w-full max-w-xl rounded-xl border border-[#E1EAE4] bg-white shadow-lg overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="location-modal-title"
+        className="relative z-10 w-full max-w-xl rounded-xl border border-[#E1EAE4] bg-white shadow-lg overflow-hidden"
       >
         <div className="flex items-center justify-between gap-4 border-b border-[#E1EAE4] px-6 py-4">
           <div>
@@ -169,7 +170,14 @@ export function LocationSelectorModal({
                 id="city-search-input"
                 type="search"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setQuery(next);
+                  if (next.trim().length < 2) {
+                    setResults([]);
+                    setError(null);
+                  }
+                }}
                 placeholder="e.g., Delhi, Gurugram, Pune, Bengaluru, London..."
                 className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] pl-10 pr-4 py-2.5 text-sm text-[#20332B] placeholder:text-[#66786E] focus:bg-white focus:border-[#237A57] focus:outline-none"
               />
@@ -203,11 +211,14 @@ export function LocationSelectorModal({
           {query.trim().length >= 2 && (
             <div>
               <h3 className="text-xs font-semibold text-[#66786E] mb-2">
-                {searching ? 'Searching locations...' : `Search Results (${results.length})`}
+                {searching
+                  ? 'Searching locations...'
+                  : `Search Results (${results.length})`}
               </h3>
               {!searching && results.length === 0 ? (
                 <p className="text-sm text-[#66786E] py-3">
-                  No matching cities found for &ldquo;{query.trim()}&rdquo;. Try a broader city name.
+                  No matching cities found for &ldquo;{query.trim()}&rdquo;. Try a broader
+                  city name.
                 </p>
               ) : (
                 <ul className="divide-y divide-[#E1EAE4] border border-[#E1EAE4] rounded-lg overflow-hidden">

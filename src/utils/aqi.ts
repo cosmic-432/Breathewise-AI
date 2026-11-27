@@ -4,7 +4,8 @@ export interface AqiInterpretation {
   id: AqiCategoryId;
   label: string;
   shortTier: string;
-  riskLevel: 'Low' | 'Moderate' | 'Elevated' | 'High' | 'Very High' | 'Severe' | 'Unknown';
+  riskLevel:
+    'Low' | 'Moderate' | 'Elevated' | 'High' | 'Very High' | 'Severe' | 'Unknown';
   hexColor: string;
   bgTint: string;
   textClass: string;
@@ -252,10 +253,7 @@ const MOLECULAR_WEIGHTS: Record<'NO2' | 'SO2' | 'O3' | 'CO', number> = {
   CO: 28.01,
 };
 
-export function ppbToUgPerM3(
-  gas: 'NO2' | 'SO2' | 'O3' | 'CO',
-  ppb: number,
-): number {
+export function ppbToUgPerM3(gas: 'NO2' | 'SO2' | 'O3' | 'CO', ppb: number): number {
   if (ppb < 0 || Number.isNaN(ppb)) {
     throw new RangeError('Concentration must be a non-negative number.');
   }
@@ -263,10 +261,7 @@ export function ppbToUgPerM3(
   return Number(((ppb * mw) / 24.45).toFixed(2));
 }
 
-export function ugPerM3ToPpb(
-  gas: 'NO2' | 'SO2' | 'O3' | 'CO',
-  ugPerM3: number,
-): number {
+export function ugPerM3ToPpb(gas: 'NO2' | 'SO2' | 'O3' | 'CO', ugPerM3: number): number {
   if (ugPerM3 < 0 || Number.isNaN(ugPerM3)) {
     throw new RangeError('Concentration must be a non-negative number.');
   }

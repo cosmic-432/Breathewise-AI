@@ -17,6 +17,10 @@ export function MapPage({ state, onOpenLocationModal }: MapPageProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markerLayerRef = useRef<L.LayerGroup | null>(null);
+  const initialCoordsRef = useRef<[number, number]>([
+    location.latitude,
+    location.longitude,
+  ]);
   const [presets, setPresets] = useState<LocationSelection[]>([]);
 
   useEffect(() => {
@@ -34,7 +38,7 @@ export function MapPage({ state, onOpenLocationModal }: MapPageProps) {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
     const map = L.map(mapContainerRef.current, {
-      center: [location.latitude, location.longitude],
+      center: initialCoordsRef.current,
       zoom: 11,
       zoomControl: true,
     });
@@ -54,8 +58,7 @@ export function MapPage({ state, onOpenLocationModal }: MapPageProps) {
         name: `Selected Map Point`,
         neighborhood: `${lat.toFixed(2)}°, ${lon.toFixed(2)}°`,
         country: 'Custom Coordinates',
-        countryCode:
-          lat >= 6 && lat <= 37 && lon >= 68 && lon <= 98 ? 'IN' : 'XX',
+        countryCode: lat >= 6 && lat <= 37 && lon >= 68 && lon <= 98 ? 'IN' : 'XX',
         latitude: lat,
         longitude: lon,
         source: 'search',
@@ -81,23 +84,17 @@ export function MapPage({ state, onOpenLocationModal }: MapPageProps) {
     });
     layer.clearLayers();
 
-    const aqiColor = interpretAqi(
-      snapshot?.aqi,
-      snapshot?.aqiScale ?? 'US_EPA',
-    ).hexColor;
+    const aqiColor = interpretAqi(snapshot?.aqi, snapshot?.aqiScale ?? 'US_EPA').hexColor;
 
     // Active location circle marker
-    const activeMarker = L.circleMarker(
-      [location.latitude, location.longitude],
-      {
-        radius: 12,
-        fillColor: aqiColor,
-        color: '#18543F',
-        weight: 2.5,
-        opacity: 1,
-        fillOpacity: 0.85,
-      },
-    );
+    const activeMarker = L.circleMarker([location.latitude, location.longitude], {
+      radius: 12,
+      fillColor: aqiColor,
+      color: '#18543F',
+      weight: 2.5,
+      opacity: 1,
+      fillOpacity: 0.85,
+    });
     activeMarker.bindPopup(
       `<strong>${location.name}</strong><br/>AQI: ${
         snapshot?.aqi ?? 'Unavailable'
@@ -130,7 +127,8 @@ export function MapPage({ state, onOpenLocationModal }: MapPageProps) {
             Air Quality Map
           </h1>
           <p className="text-sm text-[#66786E] mt-1">
-            Inspect your current area, click any map point, or choose a neighborhood below to retrieve real local readings.
+            Inspect your current area, click any map point, or choose a neighborhood below
+            to retrieve real local readings.
           </p>
         </div>
         <button
@@ -152,7 +150,8 @@ export function MapPage({ state, onOpenLocationModal }: MapPageProps) {
           />
           <div className="border-t border-[#E1EAE4] px-4 py-3 text-xs text-[#66786E] flex flex-wrap items-center justify-between gap-2">
             <span>
-              Tip: Click anywhere on the map to retrieve real air-quality readings for exact coordinates.
+              Tip: Click anywhere on the map to retrieve real air-quality readings for
+              exact coordinates.
             </span>
             <span className="font-mono tabular-nums">
               Active: {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
@@ -166,9 +165,7 @@ export function MapPage({ state, onOpenLocationModal }: MapPageProps) {
               Selected Monitoring Point
             </h2>
             <div>
-              <p className="text-base font-semibold text-[#20332B]">
-                {location.name}
-              </p>
+              <p className="text-base font-semibold text-[#20332B]">{location.name}</p>
               {location.neighborhood && (
                 <p className="text-xs text-[#66786E]">{location.neighborhood}</p>
               )}

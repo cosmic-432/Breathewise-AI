@@ -43,6 +43,7 @@ export default defineConfig(() => {
             if (id.includes('node_modules/leaflet')) {
               return 'vendor-map';
             }
+            return undefined;
           },
         },
       },

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { communityDatabaseSchema } from '../schemas/external.ts';
 import type { CommunityChallenge, CommunityReport } from '../types/index.ts';
 
 interface StoredChallenge {
@@ -25,7 +26,8 @@ const DEFAULT_CHALLENGES: StoredChallenge[] = [
     category: 'transport',
     description:
       'Replace short solo car or two-wheeler trips with shared transit, carpooling, or remote alternatives where safe.',
-    goalDescription: 'Collective voluntary goal: log genuine reduced solo trips across participating households.',
+    goalDescription:
+      'Collective voluntary goal: log genuine reduced solo trips across participating households.',
     participantHashes: [],
     actionsLoggedCount: 0,
   },
@@ -45,7 +47,8 @@ const DEFAULT_CHALLENGES: StoredChallenge[] = [
     category: 'waste',
     description:
       'Commit to composting dry garden waste and using municipal collection instead of open burning during winter inversions.',
-    goalDescription: 'Keep neighborhood breathing zones free of avoidable open-burn smoke.',
+    goalDescription:
+      'Keep neighborhood breathing zones free of avoidable open-burn smoke.',
     participantHashes: [],
     actionsLoggedCount: 0,
   },
@@ -55,7 +58,8 @@ const DEFAULT_CHALLENGES: StoredChallenge[] = [
     category: 'energy',
     description:
       'Use optimal AC/heating setpoints (24–26°C), switch off idle loads, and clean filters while preserving safe indoor air filtration.',
-    goalDescription: 'Reduce avoidable evening peak electricity consumption without compromising health.',
+    goalDescription:
+      'Reduce avoidable evening peak electricity consumption without compromising health.',
     participantHashes: [],
     actionsLoggedCount: 0,
   },
@@ -88,16 +92,14 @@ export class CommunityStore {
     try {
       if (fs.existsSync(this.filePath)) {
         const raw = fs.readFileSync(this.filePath, 'utf-8');
-        const parsed = JSON.parse(raw) as Partial<CommunityDatabase>;
-        if (Array.isArray(parsed.challenges) && Array.isArray(parsed.reports)) {
-          return {
-            challenges: parsed.challenges,
-            reports: parsed.reports,
-          };
+        const parsed: unknown = JSON.parse(raw);
+        const validated = communityDatabaseSchema.safeParse(parsed);
+        if (validated.success) {
+          return validated.data;
         }
       }
     } catch {
-      // Fall back to clean initial state if file is unreadable
+      // Fall back to clean initial state if file is unreadable or corrupted
     }
     return {
       challenges: DEFAULT_CHALLENGES.map((c) => ({

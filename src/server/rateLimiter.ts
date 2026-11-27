@@ -45,9 +45,7 @@ export function createRateLimiter(options: RateLimiterOptions) {
     }
 
     const entry = store.get(key) ?? { timestamps: [] };
-    entry.timestamps = entry.timestamps.filter(
-      (ts) => now - ts < options.windowMs,
-    );
+    entry.timestamps = entry.timestamps.filter((ts) => now - ts < options.windowMs);
 
     if (entry.timestamps.length >= options.maxRequests) {
       const oldest = entry.timestamps[0] ?? now;

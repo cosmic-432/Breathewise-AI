@@ -26,13 +26,14 @@ export const EMISSION_FACTORS = {
     global: 0.436,
     us: 0.373,
     eu: 0.242,
-  } as Record<HouseholdProfile['regionGrid'], number>,
+  } satisfies Record<HouseholdProfile['regionGrid'], number>,
   gridSources: {
-    india: 'Central Electricity Authority (CEA) India CO2 Baseline Database v19 (0.727 kg CO2/kWh)',
+    india:
+      'Central Electricity Authority (CEA) India CO2 Baseline Database v19 (0.727 kg CO2/kWh)',
     global: 'IEA Global Electricity Emission Factor 2023 (0.436 kg CO2/kWh)',
     us: 'US EPA eGRID National Average (0.373 kg CO2/kWh)',
     eu: 'European Environment Agency (EEA) 2023 Grid Average (0.242 kg CO2/kWh)',
-  } as Record<HouseholdProfile['regionGrid'], string>,
+  } satisfies Record<HouseholdProfile['regionGrid'], string>,
 } as const;
 
 export interface ImpactCalculationInput {
@@ -57,11 +58,16 @@ export function calculateEnvironmentalImpact(
   switch (input.type) {
     case 'carpool': {
       const distance = Math.max(0.5, input.distanceKm ?? 15);
-      const passengers = Math.max(2, Math.min(6, Math.round(input.passengersShared ?? 2)));
+      const passengers = Math.max(
+        2,
+        Math.min(6, Math.round(input.passengersShared ?? 2)),
+      );
       const totalKm = distance * days;
       // Baseline: each passenger drives solo. After: shared into 1 car (per-person share = 1/passengers).
       const beforeCo2 = Number((totalKm * EMISSION_FACTORS.carKgCo2PerKm).toFixed(2));
-      const afterCo2 = Number(((totalKm * EMISSION_FACTORS.carKgCo2PerKm) / passengers).toFixed(2));
+      const afterCo2 = Number(
+        ((totalKm * EMISSION_FACTORS.carKgCo2PerKm) / passengers).toFixed(2),
+      );
       const avoidedCo2 = Number((beforeCo2 - afterCo2).toFixed(2));
       const fuelSaved = Number(
         (totalKm * EMISSION_FACTORS.carLitersPerKm * (1 - 1 / passengers)).toFixed(2),
@@ -87,7 +93,8 @@ export function calculateEnvironmentalImpact(
         ],
         emissionFactorLabel: `${EMISSION_FACTORS.carKgCo2PerKm} kg CO2/km (solo baseline)`,
         dataSource: 'UK DESNZ 2024 / US EPA Passenger Vehicle Factors',
-        uncertainty: '±25% depending on vehicle age, fuel type, traffic congestion, and detour length.',
+        uncertainty:
+          '±25% depending on vehicle age, fuel type, traffic congestion, and detour length.',
         localPollutantDistinction: LOCAL_POLLUTANT_DISCLAIMER,
       };
     }
@@ -96,8 +103,14 @@ export function calculateEnvironmentalImpact(
       const distancePerAvoidedTrip = Math.max(0.5, input.distanceKm ?? 6);
       const tripsAvoided = Math.max(1, Math.round(input.tripsConsolidated ?? 2));
       const avoidedKm = distancePerAvoidedTrip * tripsAvoided;
-      const beforeCo2 = Number(((avoidedKm + distancePerAvoidedTrip) * EMISSION_FACTORS.carKgCo2PerKm).toFixed(2));
-      const afterCo2 = Number((distancePerAvoidedTrip * EMISSION_FACTORS.carKgCo2PerKm).toFixed(2));
+      const beforeCo2 = Number(
+        ((avoidedKm + distancePerAvoidedTrip) * EMISSION_FACTORS.carKgCo2PerKm).toFixed(
+          2,
+        ),
+      );
+      const afterCo2 = Number(
+        (distancePerAvoidedTrip * EMISSION_FACTORS.carKgCo2PerKm).toFixed(2),
+      );
       const avoidedCo2 = Number((avoidedKm * EMISSION_FACTORS.carKgCo2PerKm).toFixed(2));
       const fuelSaved = Number((avoidedKm * EMISSION_FACTORS.carLitersPerKm).toFixed(2));
 
@@ -128,7 +141,9 @@ export function calculateEnvironmentalImpact(
       const distance = Math.max(0.5, input.distanceKm ?? 12);
       const totalKm = distance * days;
       const beforeCo2 = Number((totalKm * EMISSION_FACTORS.carKgCo2PerKm).toFixed(2));
-      const afterCo2 = Number((totalKm * EMISSION_FACTORS.publicTransitKgCo2PerPkm).toFixed(2));
+      const afterCo2 = Number(
+        (totalKm * EMISSION_FACTORS.publicTransitKgCo2PerPkm).toFixed(2),
+      );
       const avoidedCo2 = Number(Math.max(0, beforeCo2 - afterCo2).toFixed(2));
       const fuelSaved = Number((totalKm * EMISSION_FACTORS.carLitersPerKm).toFixed(2));
 
@@ -150,7 +165,8 @@ export function calculateEnvironmentalImpact(
         ],
         emissionFactorLabel: `Net delta: ${(EMISSION_FACTORS.carKgCo2PerKm - EMISSION_FACTORS.publicTransitKgCo2PerPkm).toFixed(3)} kg CO2/km`,
         dataSource: 'IEA / UK DESNZ 2024 Transit Benchmarks',
-        uncertainty: '±30% depending on bus/metro occupancy and whether transit is electric or diesel.',
+        uncertainty:
+          '±30% depending on bus/metro occupancy and whether transit is electric or diesel.',
         localPollutantDistinction: LOCAL_POLLUTANT_DISCLAIMER,
       };
     }
@@ -178,7 +194,8 @@ export function calculateEnvironmentalImpact(
         ],
         emissionFactorLabel: `${gridFactor} kg CO2/kWh`,
         dataSource: EMISSION_FACTORS.gridSources[regionGrid],
-        uncertainty: '±15–25% depending on time-of-day renewable share on your local grid.',
+        uncertainty:
+          '±15–25% depending on time-of-day renewable share on your local grid.',
         localPollutantDistinction:
           'Lower thermal power demand reduces CO2 and power-plant SO2/NOx/particulate emissions over time, though regional wind and weather determine local neighborhood AQI.',
       };
@@ -193,14 +210,16 @@ export function calculateEnvironmentalImpact(
         tripsReduced: 0,
         kwhSaved: null,
         beforeScenario: 'Open burning of leaves, garden debris, or mixed household waste',
-        afterScenario: 'Composting organic waste and using municipal waste collection/recycling',
+        afterScenario:
+          'Composting organic waste and using municipal waste collection/recycling',
         beforeCo2Kg: null,
         afterCo2Kg: null,
         units: 'Qualitative / Educational (no fabricated numeric factor)',
         assumptions: [
           'Open waste composition, moisture content, and combustion efficiency vary widely.',
         ],
-        emissionFactorLabel: 'Not assigned a single point factor due to high material variability',
+        emissionFactorLabel:
+          'Not assigned a single point factor due to high material variability',
         dataSource: 'WHO / UNEP Open Waste Burning Guidance',
         uncertainty:
           'Exact mass of PM2.5, black carbon, and dioxins avoided cannot be measured accurately without weighing waste composition.',
@@ -220,14 +239,16 @@ export function calculateEnvironmentalImpact(
         tripsReduced: 0,
         kwhSaved: null,
         beforeScenario: 'Unvented biomass, charcoal, or smoky solid-fuel cooking indoors',
-        afterScenario: 'LPG, piped gas, or electric induction cooking with kitchen exhaust ventilation',
+        afterScenario:
+          'LPG, piped gas, or electric induction cooking with kitchen exhaust ventilation',
         beforeCo2Kg: null,
         afterCo2Kg: null,
         units: 'Qualitative indoor exposure & emission guidance',
         assumptions: [
           'Fuel mass, stove efficiency, and electricity source vary significantly by household.',
         ],
-        emissionFactorLabel: 'WHO Indoor Air Quality Guidelines (household fuel transition)',
+        emissionFactorLabel:
+          'WHO Indoor Air Quality Guidelines (household fuel transition)',
         dataSource: 'World Health Organization (WHO) Household Air Pollution Guidelines',
         uncertainty:
           'Exact emission savings depend on cooking duration, stove type, and baseline fuel.',

@@ -20,10 +20,7 @@ export function HistoryPage({ state }: HistoryPageProps) {
   const { aqiHistory, impactActions } = state;
   const [showTable, setShowTable] = useState(false);
 
-  const orderedReadings = useMemo(
-    () => [...aqiHistory].reverse(),
-    [aqiHistory],
-  );
+  const orderedReadings = useMemo(() => [...aqiHistory].reverse(), [aqiHistory]);
 
   const chartData = useMemo(
     () =>
@@ -42,13 +39,9 @@ export function HistoryPage({ state }: HistoryPageProps) {
   );
 
   const summaryStats = useMemo(() => {
-    const validAqi = aqiHistory
-      .map((r) => r.aqi)
-      .filter((v): v is number => v !== null);
+    const validAqi = aqiHistory.map((r) => r.aqi).filter((v): v is number => v !== null);
     if (validAqi.length === 0) return null;
-    const avg = Math.round(
-      validAqi.reduce((a, b) => a + b, 0) / validAqi.length,
-    );
+    const avg = Math.round(validAqi.reduce((a, b) => a + b, 0) / validAqi.length);
     return {
       count: validAqi.length,
       avgAqi: avg,
@@ -60,9 +53,7 @@ export function HistoryPage({ state }: HistoryPageProps) {
   const totalCo2Avoided = useMemo(
     () =>
       Number(
-        impactActions
-          .reduce((acc, item) => acc + (item.co2AvoidedKg ?? 0), 0)
-          .toFixed(2),
+        impactActions.reduce((acc, item) => acc + (item.co2AvoidedKg ?? 0), 0).toFixed(2),
       ),
     [impactActions],
   );
@@ -74,7 +65,8 @@ export function HistoryPage({ state }: HistoryPageProps) {
           Air Quality History &amp; Insights
         </h1>
         <p className="text-sm text-[#66786E] mt-1">
-          Stored provider readings are strictly separated from your personal activity records. Historical readings are never manufactured.
+          Stored provider readings are strictly separated from your personal activity
+          records. Historical readings are never manufactured.
         </p>
       </div>
 
@@ -92,7 +84,8 @@ export function HistoryPage({ state }: HistoryPageProps) {
               1. Retrieved Environmental Readings (Measured / Provider-Supplied)
             </h2>
             <p className="text-xs text-[#66786E] mt-0.5">
-              Automatically logged whenever BreatheWise AI retrieves a verified non-null snapshot.
+              Automatically logged whenever BreatheWise AI retrieves a verified non-null
+              snapshot.
             </p>
           </div>
 
@@ -138,13 +131,15 @@ export function HistoryPage({ state }: HistoryPageProps) {
 
         {aqiHistory.length === 0 ? (
           <p className="text-sm text-[#66786E] py-4">
-            No historical readings stored yet. As you inspect locations over time, real retrieved readings will appear here without fabricating synthetic trends.
+            No historical readings stored yet. As you inspect locations over time, real
+            retrieved readings will appear here without fabricating synthetic trends.
           </p>
         ) : showTable || chartData.length < 2 ? (
           <div className="space-y-3">
             {chartData.length < 2 && (
               <p className="text-xs text-[#66786E]">
-                A multi-point trend chart will automatically render once at least 2 readings are recorded over time or across locations.
+                A multi-point trend chart will automatically render once at least 2
+                readings are recorded over time or across locations.
               </p>
             )}
             <div className="overflow-x-auto">
@@ -256,7 +251,9 @@ export function HistoryPage({ state }: HistoryPageProps) {
 
         {impactActions.length === 0 ? (
           <p className="text-sm text-[#66786E]">
-            No household sustainable actions recorded yet. Log a carpool, transit, or electricity-saving action in &ldquo;My Impact&rdquo; to track progress over time.
+            No household sustainable actions recorded yet. Log a carpool, transit, or
+            electricity-saving action in &ldquo;My Impact&rdquo; to track progress over
+            time.
           </p>
         ) : (
           <ul className="divide-y divide-[#E1EAE4]">
@@ -268,7 +265,8 @@ export function HistoryPage({ state }: HistoryPageProps) {
                 <div>
                   <p className="font-medium text-[#20332B]">{act.label}</p>
                   <p className="text-xs text-[#66786E]">
-                    Recorded {formatReadableTimestamp(act.dateIso)} · User-generated record
+                    Recorded {formatReadableTimestamp(act.dateIso)} · User-generated
+                    record
                   </p>
                 </div>
                 <div className="text-xs font-mono tabular-nums text-[#18543F]">

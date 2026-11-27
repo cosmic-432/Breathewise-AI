@@ -194,8 +194,10 @@ export default function App() {
           aria-modal="true"
           aria-label="Navigation menu"
         >
-          <div
-            className="fixed inset-0 bg-[#20332B]/40"
+          <button
+            type="button"
+            aria-label="Close navigation menu"
+            className="fixed inset-0 bg-[#20332B]/40 border-0 p-0 cursor-default"
             onClick={() => setMobileMenuOpen(false)}
           />
           <div

@@ -13,14 +13,13 @@ export const StructuredAIResponseCard = memo(function StructuredAIResponseCard({
   return (
     <div className="space-y-5 text-sm text-[#20332B]">
       <div>
-        <p className="leading-relaxed text-[15px] text-[#20332B]">
-          {response.summary}
-        </p>
+        <p className="leading-relaxed text-[15px] text-[#20332B]">{response.summary}</p>
         <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#66786E]">
           <span className="font-medium text-[#20332B]">{ctx.location}</span>
           <span aria-hidden="true">·</span>
           <span className="font-mono tabular-nums">
-            AQI {ctx.aqi_value !== null ? ctx.aqi_value : 'Unavailable'} ({ctx.aqi_category})
+            AQI {ctx.aqi_value !== null ? ctx.aqi_value : 'Unavailable'} (
+            {ctx.aqi_category})
           </span>
           <span aria-hidden="true">·</span>
           <span>{ctx.data_status}</span>
@@ -49,9 +48,7 @@ export const StructuredAIResponseCard = memo(function StructuredAIResponseCard({
                       : 'General guidance'}
                   </span>
                 </div>
-                <p className="text-sm text-[#20332B]/90 leading-relaxed">
-                  {rec.action}
-                </p>
+                <p className="text-sm text-[#20332B]/90 leading-relaxed">{rec.action}</p>
               </li>
             ))}
           </ol>
@@ -127,7 +124,9 @@ export const StructuredAIResponseCard = memo(function StructuredAIResponseCard({
           </div>
         )}
         <div>
-          Educational air-quality guidance only — not medical advice. Seek prompt medical attention if anyone experiences breathing difficulty, chest pain, or severe wheezing.
+          Educational air-quality guidance only — not medical advice. Seek prompt medical
+          attention if anyone experiences breathing difficulty, chest pain, or severe
+          wheezing.
         </div>
         {response.sources.length > 0 && (
           <div>

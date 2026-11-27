@@ -53,11 +53,18 @@ export function evaluateIndoorAir(
     `Air purifier: ${conditions.hasPurifier ? `Yes (${conditions.filterType.replace(/_/g, ' ')})` : 'None reported'}`,
   ];
 
-  if (conditions.indoorHumidityPercent !== null && conditions.indoorHumidityPercent !== undefined) {
-    reportedConditionsSummary.push(`Reported indoor humidity: ${conditions.indoorHumidityPercent}%`);
+  if (
+    conditions.indoorHumidityPercent !== null &&
+    conditions.indoorHumidityPercent !== undefined
+  ) {
+    reportedConditionsSummary.push(
+      `Reported indoor humidity: ${conditions.indoorHumidityPercent}%`,
+    );
   }
   if (conditions.nearbySources.length > 0) {
-    reportedConditionsSummary.push(`Nearby sources: ${conditions.nearbySources.join(', ')}`);
+    reportedConditionsSummary.push(
+      `Nearby sources: ${conditions.nearbySources.join(', ')}`,
+    );
   }
 
   let ventilationStrategy: string;
@@ -72,7 +79,10 @@ export function evaluateIndoorAir(
 
   const priorityActions: IndoorAdviceResult['priorityActions'] = [];
 
-  if (!outdoorInterp.openWindowsRecommended && conditions.ventilation === 'natural_windows') {
+  if (
+    !outdoorInterp.openWindowsRecommended &&
+    conditions.ventilation === 'natural_windows'
+  ) {
     priorityActions.push({
       title: 'Close windows during outdoor pollution peaks',
       detail:
@@ -99,7 +109,10 @@ export function evaluateIndoorAir(
     });
   }
 
-  if (conditions.cookingFuel === 'solid_biomass_coal' || conditions.cookingFuel === 'mixed') {
+  if (
+    conditions.cookingFuel === 'solid_biomass_coal' ||
+    conditions.cookingFuel === 'mixed'
+  ) {
     priorityActions.push({
       title: 'Prioritize cleaner cooking and active kitchen exhaust',
       detail:

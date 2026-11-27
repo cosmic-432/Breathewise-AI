@@ -5,10 +5,34 @@ import { StructuredAIResponseCard } from '../components/StructuredAIResponseCard
 import type { BreatheWiseState } from '../hooks/useBreatheWiseState.ts';
 import type { IndoorConditions, StructuredAIResponse } from '../types/index.ts';
 import { evaluateIndoorAir } from '../utils/indoorAdvisor.ts';
+import { isOneOf } from '../utils/typeGuards.ts';
 
 interface IndoorAirPageProps {
   state: BreatheWiseState;
 }
+
+const VENTILATION_OPTIONS: readonly IndoorConditions['ventilation'][] = [
+  'natural_windows',
+  'closed',
+  'exhaust_fans',
+  'mechanical_hvac',
+];
+
+const COOKING_FUEL_OPTIONS: readonly IndoorConditions['cookingFuel'][] = [
+  'electric_induction',
+  'lpg_piped_gas',
+  'solid_biomass_coal',
+  'mixed',
+];
+
+const FILTER_TYPE_OPTIONS: readonly IndoorConditions['filterType'][] = [
+  'none',
+  'true_hepa',
+  'hepa_carbon',
+  'basic_dust',
+  'ionizer_ozone',
+  'unknown',
+];
 
 const NEARBY_SOURCE_OPTIONS = [
   'Busy main road nearby',
@@ -23,10 +47,7 @@ export function IndoorAirPage({ state }: IndoorAirPageProps) {
   const [loadingAi, setLoadingAi] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
 
-  const baseline = useMemo(
-    () => evaluateIndoorAir(indoor, snapshot),
-    [indoor, snapshot],
-  );
+  const baseline = useMemo(() => evaluateIndoorAir(indoor, snapshot), [indoor, snapshot]);
 
   const updateField = <K extends keyof IndoorConditions>(
     key: K,
@@ -75,7 +96,8 @@ export function IndoorAirPage({ state }: IndoorAirPageProps) {
             Indoor Air Quality Advisor
           </h1>
           <p className="text-sm text-[#66786E] mt-1">
-            Ventilation timing, source control, and purifier sizing separated cleanly into measured data, reported room conditions, and AI guidance.
+            Ventilation timing, source control, and purifier sizing separated cleanly into
+            measured data, reported room conditions, and AI guidance.
           </p>
         </div>
         <button
@@ -102,7 +124,8 @@ export function IndoorAirPage({ state }: IndoorAirPageProps) {
               Your Home &amp; Room Conditions
             </h2>
             <p className="text-xs text-[#66786E] mt-0.5">
-              Changes save automatically and recalculate CADR and ventilation guidance immediately.
+              Changes save automatically and recalculate CADR and ventilation guidance
+              immediately.
             </p>
           </div>
 
@@ -158,12 +181,11 @@ export function IndoorAirPage({ state }: IndoorAirPageProps) {
             <select
               id="room-ventilation"
               value={indoor.ventilation}
-              onChange={(e) =>
-                updateField(
-                  'ventilation',
-                  e.target.value as IndoorConditions['ventilation'],
-                )
-              }
+              onChange={(e) => {
+                if (isOneOf(e.target.value, VENTILATION_OPTIONS)) {
+                  updateField('ventilation', e.target.value);
+                }
+              }}
               className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm text-[#20332B]"
             >
               <option value="natural_windows">Natural window ventilation</option>
@@ -183,12 +205,11 @@ export function IndoorAirPage({ state }: IndoorAirPageProps) {
             <select
               id="cooking-fuel"
               value={indoor.cookingFuel}
-              onChange={(e) =>
-                updateField(
-                  'cookingFuel',
-                  e.target.value as IndoorConditions['cookingFuel'],
-                )
-              }
+              onChange={(e) => {
+                if (isOneOf(e.target.value, COOKING_FUEL_OPTIONS)) {
+                  updateField('cookingFuel', e.target.value);
+                }
+              }}
               className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm text-[#20332B]"
             >
               <option value="electric_induction">Electric / Induction</option>
@@ -231,12 +252,11 @@ export function IndoorAirPage({ state }: IndoorAirPageProps) {
                 <select
                   id="filter-type"
                   value={indoor.filterType}
-                  onChange={(e) =>
-                    updateField(
-                      'filterType',
-                      e.target.value as IndoorConditions['filterType'],
-                    )
-                  }
+                  onChange={(e) => {
+                    if (isOneOf(e.target.value, FILTER_TYPE_OPTIONS)) {
+                      updateField('filterType', e.target.value);
+                    }
+                  }}
                   className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm text-[#20332B]"
                 >
                   <option value="true_hepa">True HEPA (H13/H14)</option>
@@ -391,11 +411,10 @@ export function IndoorAirPage({ state }: IndoorAirPageProps) {
               >
                 <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" aria-hidden="true" />
                 <div>
-                  <p className="font-semibold">
-                    Avoid ozone-generating air cleaners
-                  </p>
+                  <p className="font-semibold">Avoid ozone-generating air cleaners</p>
                   <p className="mt-0.5 text-xs leading-relaxed">
-                    Ozone irritates lungs and can worsen respiratory symptoms. Switch to a mechanical True HEPA purifier that does not generate ozone.
+                    Ozone irritates lungs and can worsen respiratory symptoms. Switch to a
+                    mechanical True HEPA purifier that does not generate ozone.
                   </p>
                 </div>
               </div>
@@ -417,12 +436,8 @@ export function IndoorAirPage({ state }: IndoorAirPageProps) {
               <ul className="space-y-3">
                 {baseline.priorityActions.map((act) => (
                   <li key={act.title} className="space-y-0.5">
-                    <p className="text-sm font-semibold text-[#20332B]">
-                      {act.title}
-                    </p>
-                    <p className="text-sm text-[#66786E] leading-relaxed">
-                      {act.detail}
-                    </p>
+                    <p className="text-sm font-semibold text-[#20332B]">{act.title}</p>
+                    <p className="text-sm text-[#66786E] leading-relaxed">{act.detail}</p>
                   </li>
                 ))}
               </ul>
@@ -449,10 +464,7 @@ export function IndoorAirPage({ state }: IndoorAirPageProps) {
             className="rounded-xl border border-[#E1EAE4] bg-white p-6 space-y-3"
           >
             <div className="flex items-baseline justify-between gap-2">
-              <h2
-                id="ai-indoor-heading"
-                className="text-sm font-semibold text-[#20332B]"
-              >
+              <h2 id="ai-indoor-heading" className="text-sm font-semibold text-[#20332B]">
                 3. AI-Generated Personalized Indoor Guidance
               </h2>
               <span className="text-xs text-[#66786E]">Powered by Gemini</span>
@@ -471,7 +483,9 @@ export function IndoorAirPage({ state }: IndoorAirPageProps) {
               <StructuredAIResponseCard response={aiAdvice} />
             ) : (
               <p className="text-sm text-[#66786E]">
-                Click &ldquo;Get AI Indoor Plan&rdquo; above to receive a tailored room-by-room indoor air checklist combining your reported room details with today’s outdoor air quality.
+                Click &ldquo;Get AI Indoor Plan&rdquo; above to receive a tailored
+                room-by-room indoor air checklist combining your reported room details
+                with today’s outdoor air quality.
               </p>
             )}
           </section>

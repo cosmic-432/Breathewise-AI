@@ -40,8 +40,8 @@ export function useBreatheWiseState() {
   const [checklist, setChecklistState] = useState<FamilyChecklistItem[]>(() =>
     localStore.getChecklist(),
   );
-  const [impactActions, setImpactActionsState] = useState<RecordedImpactAction[]>(
-    () => localStore.getImpactActions(),
+  const [impactActions, setImpactActionsState] = useState<RecordedImpactAction[]>(() =>
+    localStore.getImpactActions(),
   );
   const [aqiHistory, setAqiHistory] = useState<HistoricalAqiRecord[]>(() =>
     localStore.getAqiHistory(),
@@ -52,28 +52,23 @@ export function useBreatheWiseState() {
 
   const abortRef = useRef<AbortController | null>(null);
 
-  const loadAirQuality = useCallback(
-    async (loc: LocationSelection, refresh: boolean = false) => {
-      if (abortRef.current) {
-        abortRef.current.abort();
-      }
-      const controller = new AbortController();
-      abortRef.current = controller;
-
-      setLoadingAqi(true);
-      setAqiError(null);
+  const fetchForLocation = useCallback(
+    async (loc: LocationSelection, refresh: boolean, controller: AbortController) => {
       try {
         const data = await apiClient.fetchAirQuality(loc, {
           refresh,
           signal: controller.signal,
         });
+        if (abortRef.current !== controller) return;
         setSnapshot(data);
+        setAqiError(null);
         const updatedHistory = localStore.recordVerifiedAqiSnapshot(data);
         setAqiHistory(updatedHistory);
       } catch (err) {
         if (err instanceof DOMException && err.name === 'AbortError') {
           return;
         }
+        if (abortRef.current !== controller) return;
         setAqiError(
           err instanceof Error
             ? err.message
@@ -88,15 +83,61 @@ export function useBreatheWiseState() {
     [],
   );
 
-  useEffect(() => {
-    void loadAirQuality(location, false);
-    return () => {
+  const loadAirQuality = useCallback(
+    async (loc: LocationSelection, refresh: boolean = false) => {
       abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+      setLoadingAqi(true);
+      setAqiError(null);
+      await fetchForLocation(loc, refresh, controller);
+    },
+    [fetchForLocation],
+  );
+
+  useEffect(() => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    apiClient
+      .fetchAirQuality(location, {
+        refresh: false,
+        signal: controller.signal,
+      })
+      .then((data) => {
+        if (abortRef.current !== controller) return;
+        setSnapshot(data);
+        setAqiError(null);
+        const updatedHistory = localStore.recordVerifiedAqiSnapshot(data);
+        setAqiHistory(updatedHistory);
+      })
+      .catch((err: unknown) => {
+        if (err instanceof DOMException && err.name === 'AbortError') {
+          return;
+        }
+        if (abortRef.current !== controller) return;
+        setAqiError(
+          err instanceof Error
+            ? err.message
+            : 'Unable to fetch air-quality data right now.',
+        );
+      })
+      .finally(() => {
+        if (abortRef.current === controller) {
+          setLoadingAqi(false);
+        }
+      });
+
+    return () => {
+      controller.abort();
     };
-  }, [location, loadAirQuality]);
+  }, [location]);
 
   const setLocation = useCallback((next: LocationSelection) => {
     localStore.setLocation(next);
+    setLoadingAqi(true);
+    setAqiError(null);
     setLocationState(next);
   }, []);
 

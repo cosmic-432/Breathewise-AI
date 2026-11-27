@@ -1,3 +1,14 @@
+import type { z } from 'zod';
+import {
+  airQualitySnapshotSchema,
+  apiAiResponseSchema,
+  apiErrorPayloadSchema,
+  apiGeocodeResponseSchema,
+  apiParticipateResponseSchema,
+  apiPresetsResponseSchema,
+  apiReportCreateResponseSchema,
+  communitySummaryResponseSchema,
+} from '../schemas/storage.ts';
 import type {
   AirQualitySnapshot,
   CommunityChallenge,
@@ -21,26 +32,49 @@ export class ApiClientError extends Error {
   }
 }
 
-async function parseJsonResponse<T>(res: Response): Promise<T> {
+export async function parseJsonResponse<T>(
+  res: Response,
+  schema: z.ZodType<T>,
+): Promise<T> {
   const text = await res.text();
-  let data: unknown;
+  let raw: unknown;
   try {
-    data = text ? JSON.parse(text) : {};
+    raw = text ? JSON.parse(text) : {};
   } catch {
     throw new ApiClientError(
-      'Received an invalid response from the server.',
+      'Received an unreadable response from the server.',
       res.status,
+      'INVALID_JSON',
     );
   }
+
   if (!res.ok) {
-    const errObj = data as { error?: string; code?: string };
+    const errParsed = apiErrorPayloadSchema.safeParse(raw);
     throw new ApiClientError(
-      errObj.error ?? `Request failed (${res.status})`,
+      errParsed.success && errParsed.data.error
+        ? errParsed.data.error
+        : `Request failed (${res.status})`,
       res.status,
-      errObj.code,
+      errParsed.success ? errParsed.data.code : undefined,
     );
   }
-  return data as T;
+
+  const validated = schema.safeParse(raw);
+  if (!validated.success) {
+    throw new ApiClientError(
+      'Server returned data that did not match the expected format.',
+      502,
+      'RESPONSE_SCHEMA_MISMATCH',
+    );
+  }
+  return validated.data;
+}
+
+export interface CommunitySummaryPayload {
+  challenges: CommunityChallenge[];
+  reports: CommunityReport[];
+  totalVerifiedParticipants: number;
+  totalLoggedActions: number;
 }
 
 const inflightAirQuality = new Map<string, Promise<AirQualitySnapshot>>();
@@ -48,7 +82,7 @@ const inflightAirQuality = new Map<string, Promise<AirQualitySnapshot>>();
 export const apiClient = {
   async fetchPresets(signal?: AbortSignal): Promise<LocationSelection[]> {
     const res = await fetch('/api/locations/presets', { signal });
-    const data = await parseJsonResponse<{ locations: LocationSelection[] }>(res);
+    const data = await parseJsonResponse(res, apiPresetsResponseSchema);
     return data.locations;
   },
 
@@ -59,7 +93,7 @@ export const apiClient = {
     const res = await fetch(`/api/geocode?q=${encodeURIComponent(query)}`, {
       signal,
     });
-    const data = await parseJsonResponse<{ results: LocationSelection[] }>(res);
+    const data = await parseJsonResponse(res, apiGeocodeResponseSchema);
     return data.results;
   },
 
@@ -70,8 +104,9 @@ export const apiClient = {
     const key = `${location.latitude.toFixed(3)},${location.longitude.toFixed(3)},${
       options?.refresh ? '1' : '0'
     }`;
-    if (!options?.signal && inflightAirQuality.has(key)) {
-      return inflightAirQuality.get(key)!;
+    if (!options?.signal) {
+      const existing = inflightAirQuality.get(key);
+      if (existing) return existing;
     }
 
     const params = new URLSearchParams({
@@ -88,11 +123,11 @@ export const apiClient = {
 
     const promise = fetch(`/api/air-quality?${params.toString()}`, {
       signal: options?.signal,
-    }).then((res) => parseJsonResponse<AirQualitySnapshot>(res));
+    }).then((res) => parseJsonResponse(res, airQualitySnapshotSchema));
 
     if (!options?.signal) {
       inflightAirQuality.set(key, promise);
-      promise.finally(() => inflightAirQuality.delete(key));
+      void promise.finally(() => inflightAirQuality.delete(key));
     }
     return promise;
   },
@@ -157,18 +192,13 @@ export const apiClient = {
       signal,
     });
 
-    const data = await parseJsonResponse<{ response: StructuredAIResponse }>(res);
+    const data = await parseJsonResponse(res, apiAiResponseSchema);
     return data.response;
   },
 
-  async fetchCommunity(signal?: AbortSignal): Promise<{
-    challenges: CommunityChallenge[];
-    reports: CommunityReport[];
-    totalVerifiedParticipants: number;
-    totalLoggedActions: number;
-  }> {
+  async fetchCommunity(signal?: AbortSignal): Promise<CommunitySummaryPayload> {
     const res = await fetch('/api/community', { signal });
-    return parseJsonResponse(res);
+    return parseJsonResponse(res, communitySummaryResponseSchema);
   },
 
   async participateInChallenge(payload: {
@@ -177,19 +207,14 @@ export const apiClient = {
     clientToken: string;
   }): Promise<{
     challenge: CommunityChallenge;
-    summary: {
-      challenges: CommunityChallenge[];
-      reports: CommunityReport[];
-      totalVerifiedParticipants: number;
-      totalLoggedActions: number;
-    };
+    summary: CommunitySummaryPayload;
   }> {
     const res = await fetch('/api/community/participate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    return parseJsonResponse(res);
+    return parseJsonResponse(res, apiParticipateResponseSchema);
   },
 
   async submitCommunityReport(payload: {
@@ -199,18 +224,13 @@ export const apiClient = {
     description: string;
   }): Promise<{
     report: CommunityReport;
-    summary: {
-      challenges: CommunityChallenge[];
-      reports: CommunityReport[];
-      totalVerifiedParticipants: number;
-      totalLoggedActions: number;
-    };
+    summary: CommunitySummaryPayload;
   }> {
     const res = await fetch('/api/community/reports', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    return parseJsonResponse(res);
+    return parseJsonResponse(res, apiReportCreateResponseSchema);
   },
 };

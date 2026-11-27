@@ -121,9 +121,13 @@ describe('API integration, error handling, rate limiting, and security', () => {
       communityStore: new CommunityStore(tmpDir),
     });
 
-    const res = await request(app)
-      .get('/api/air-quality')
-      .query({ lat: 28.6315, lon: 77.2167, name: 'New Delhi', country: 'India', countryCode: 'IN' });
+    const res = await request(app).get('/api/air-quality').query({
+      lat: 28.6315,
+      lon: 77.2167,
+      name: 'New Delhi',
+      country: 'India',
+      countryCode: 'IN',
+    });
 
     expect(res.status).toBe(200);
     expect(res.headers['x-content-type-options']).toBe('nosniff');
@@ -145,9 +149,13 @@ describe('API integration, error handling, rate limiting, and security', () => {
       communityStore: new CommunityStore(tmpDir),
     });
 
-    const res = await request(app)
-      .get('/api/air-quality')
-      .query({ lat: 19.07, lon: 72.87, name: 'Mumbai', country: 'India', countryCode: 'IN' });
+    const res = await request(app).get('/api/air-quality').query({
+      lat: 19.07,
+      lon: 72.87,
+      name: 'Mumbai',
+      country: 'India',
+      countryCode: 'IN',
+    });
 
     expect(res.status).toBe(200);
     expect(res.body.aqi).toBeNull();
@@ -175,7 +183,8 @@ describe('API integration, error handling, rate limiting, and security', () => {
     const timeoutApp = createServerApp({
       geminiService: createGeminiService({
         timeoutMs: 40,
-        generateFn: () => new Promise((resolve) => setTimeout(() => resolve(VALID_AI_JSON), 250)),
+        generateFn: () =>
+          new Promise((resolve) => setTimeout(() => resolve(VALID_AI_JSON), 250)),
       }),
       communityStore: new CommunityStore(tmpDir),
     });
@@ -209,9 +218,15 @@ describe('API integration, error handling, rate limiting, and security', () => {
       communityStore: new CommunityStore(tmpDir),
     });
 
-    const r1 = await request(app).post('/api/ai/assist').send({ question: 'First check please' });
-    const r2 = await request(app).post('/api/ai/assist').send({ question: 'Second check please' });
-    const r3 = await request(app).post('/api/ai/assist').send({ question: 'Third check please' });
+    const r1 = await request(app)
+      .post('/api/ai/assist')
+      .send({ question: 'First check please' });
+    const r2 = await request(app)
+      .post('/api/ai/assist')
+      .send({ question: 'Second check please' });
+    const r3 = await request(app)
+      .post('/api/ai/assist')
+      .send({ question: 'Third check please' });
 
     expect(r1.status).toBe(200);
     expect(r2.status).toBe(200);
@@ -239,7 +254,8 @@ describe('API integration, error handling, rate limiting, and security', () => {
       areaLabel: 'South Delhi',
       category: 'tip',
       title: 'Leaf composting at neighborhood park',
-      description: 'Our resident group started composting dry leaves instead of burning them.',
+      description:
+        'Our resident group started composting dry leaves instead of burning them.',
     });
     expect(repRes.status).toBe(201);
     expect(repRes.body.report.unverifiedUserReport).toBe(true);
@@ -284,13 +300,11 @@ describe('API integration, error handling, rate limiting, and security', () => {
     expect(piiPost.status).toBe(400);
     expect(piiPost.body.error).toContain('privacy');
 
-    const missingChallenge = await request(app)
-      .post('/api/community/participate')
-      .send({
-        challengeId: 'does-not-exist',
-        action: 'join',
-        clientToken: 'anon-token-abcdef',
-      });
+    const missingChallenge = await request(app).post('/api/community/participate').send({
+      challengeId: 'does-not-exist',
+      action: 'join',
+      clientToken: 'anon-token-abcdef',
+    });
     expect(missingChallenge.status).toBe(404);
   });
 
@@ -357,32 +371,38 @@ describe('API integration, error handling, rate limiting, and security', () => {
       communityStore: new CommunityStore(tmpDir),
     });
 
-    const first = await request(app)
-      .get('/api/air-quality')
-      .query({ lat: 28.6469, lon: 77.316, name: 'New Delhi', country: 'India', countryCode: 'IN' });
+    const first = await request(app).get('/api/air-quality').query({
+      lat: 28.6469,
+      lon: 77.316,
+      name: 'New Delhi',
+      country: 'India',
+      countryCode: 'IN',
+    });
     expect(first.status).toBe(200);
     expect(first.body.aqiStatus).toBe('measured');
     expect(first.body.cached).toBe(false);
     expect(first.body.dataSource).toContain('CPCB');
 
     // Second call hits cache without calling WAQI again
-    const second = await request(app)
-      .get('/api/air-quality')
-      .query({ lat: 28.6469, lon: 77.316, name: 'New Delhi', country: 'India', countryCode: 'IN' });
+    const second = await request(app).get('/api/air-quality').query({
+      lat: 28.6469,
+      lon: 77.316,
+      name: 'New Delhi',
+      country: 'India',
+      countryCode: 'IN',
+    });
     expect(second.body.cached).toBe(true);
     expect(waqiCalls).toBe(1);
 
     // Explicit refresh=1 bypasses cache
-    const refreshed = await request(app)
-      .get('/api/air-quality')
-      .query({
-        lat: 28.6469,
-        lon: 77.316,
-        name: 'New Delhi',
-        country: 'India',
-        countryCode: 'IN',
-        refresh: '1',
-      });
+    const refreshed = await request(app).get('/api/air-quality').query({
+      lat: 28.6469,
+      lon: 77.316,
+      name: 'New Delhi',
+      country: 'India',
+      countryCode: 'IN',
+      refresh: '1',
+    });
     expect(refreshed.body.cached).toBe(false);
     expect(waqiCalls).toBe(2);
 

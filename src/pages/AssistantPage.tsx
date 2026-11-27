@@ -18,19 +18,23 @@ const EXAMPLE_PROMPTS = [
   'Explain today’s pollutant readings in plain language and what they mean for children playing outdoors.',
 ];
 
-export function AssistantPage({
-  state,
-  onOpenLocationModal,
-}: AssistantPageProps) {
-  const {
-    snapshot,
-    location,
-    household,
-    indoor,
-    routines,
-    chatTurns,
-    setChatTurns,
-  } = state;
+let turnSequence = 0;
+
+function createChatTurn(
+  prefix: 'usr' | 'ast' | 'err',
+  fields: Omit<ChatTurn, 'id' | 'createdAt'>,
+): ChatTurn {
+  turnSequence += 1;
+  return {
+    id: `${prefix}-${Date.now()}-${turnSequence}`,
+    createdAt: new Date().toISOString(),
+    ...fields,
+  };
+}
+
+export function AssistantPage({ state, onOpenLocationModal }: AssistantPageProps) {
+  const { snapshot, location, household, indoor, routines, chatTurns, setChatTurns } =
+    state;
 
   const [input, setInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -40,12 +44,10 @@ export function AssistantPage({
     const question = rawQuestion.trim();
     if (question.length < 3 || submitting) return;
 
-    const userTurn: ChatTurn = {
-      id: `usr-${Date.now()}`,
+    const userTurn = createChatTurn('usr', {
       role: 'user',
       text: question,
-      createdAt: new Date().toISOString(),
-    };
+    });
 
     const historyForApi = chatTurns.slice(-6).map((t) => ({
       role: t.role,
@@ -73,29 +75,23 @@ export function AssistantPage({
         controller.signal,
       );
 
-      const assistantTurn: ChatTurn = {
-        id: `ast-${Date.now()}`,
+      const assistantTurn = createChatTurn('ast', {
         role: 'assistant',
         text: structured.summary,
         structured,
-        createdAt: new Date().toISOString(),
-      };
+      });
       setChatTurns((prev) => [...prev, assistantTurn]);
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
         return;
       }
       const message =
-        err instanceof Error
-          ? err.message
-          : 'Unable to reach BreatheWise AI right now.';
-      const errTurn: ChatTurn = {
-        id: `err-${Date.now()}`,
+        err instanceof Error ? err.message : 'Unable to reach BreatheWise AI right now.';
+      const errTurn = createChatTurn('err', {
         role: 'assistant',
         text: '',
         error: message,
-        createdAt: new Date().toISOString(),
-      };
+      });
       setChatTurns((prev) => [...prev, errTurn]);
     } finally {
       setSubmitting(false);
@@ -111,7 +107,8 @@ export function AssistantPage({
             BreatheWise AI Assistant
           </h1>
           <p className="text-sm text-[#66786E] mt-1">
-            Location-aware guidance grounded in your current air-quality data, household profile, and routines.
+            Location-aware guidance grounded in your current air-quality data, household
+            profile, and routines.
           </p>
         </div>
 
@@ -151,9 +148,7 @@ export function AssistantPage({
             AQI {snapshot?.aqi ?? 'Unavailable'}
           </span>
           <span aria-hidden="true">·</span>
-          <span>
-            Household: {household.memberCount} member(s)
-          </span>
+          <span>Household: {household.memberCount} member(s)</span>
           <span aria-hidden="true">·</span>
           <span>{routines.length} routine(s) saved</span>
         </div>
@@ -175,7 +170,9 @@ export function AssistantPage({
                   Ask a question about today’s air quality
                 </h2>
                 <p className="text-sm text-[#66786E] mt-1 leading-relaxed">
-                  BreatheWise AI reads your verified local air-quality snapshot and household preferences, clearly separates data-backed guidance from general advice, and never fabricates live numbers.
+                  BreatheWise AI reads your verified local air-quality snapshot and
+                  household preferences, clearly separates data-backed guidance from
+                  general advice, and never fabricates live numbers.
                 </p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

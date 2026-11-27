@@ -110,20 +110,29 @@ describe('End-to-End 10-Step User Journey', () => {
             recommendations: [
               {
                 title: 'Use enclosed metro for college commute',
-                action: 'Avoid open-air cycling or two-wheelers; wear a fitted N95 mask while walking to the station.',
+                action:
+                  'Avoid open-air cycling or two-wheelers; wear a fitted N95 mask while walking to the station.',
                 basis: 'verified_data',
               },
               {
                 title: 'Protect elderly members indoors',
-                action: 'Keep road-facing windows closed during smog peaks and avoid indoor smoke.',
+                action:
+                  'Keep road-facing windows closed during smog peaks and avoid indoor smoke.',
                 basis: 'general_guidance',
               },
             ],
-            indoor_actions: ['Close windows during smog peak', 'Use kitchen exhaust during cooking'],
+            indoor_actions: [
+              'Close windows during smog peak',
+              'Use kitchen exhaust during cooking',
+            ],
             outdoor_actions: ['Limit non-essential outdoor trips'],
             sustainable_alternatives: ['Use enclosed metro transit instead of solo car'],
-            impact_explanation: ['Enclosed transit reduces tailpipe emissions without exposing you to roadside smoke.'],
-            limitations: ['Educational guidance only; seek medical assistance if breathing symptoms appear.'],
+            impact_explanation: [
+              'Enclosed transit reduces tailpipe emissions without exposing you to roadside smoke.',
+            ],
+            limitations: [
+              'Educational guidance only; seek medical assistance if breathing symptoms appear.',
+            ],
             sources: ['Open-Meteo Air Quality (CAMS Atmospheric Model)'],
           }),
       }),
@@ -162,30 +171,32 @@ describe('End-to-End 10-Step User Journey', () => {
     };
 
     // 4. User asks Gemini for personalized guidance
-    const aiRes = await request(app).post('/api/ai/assist').send({
-      question:
-        'The AQI in my area is very poor. I need to commute to college and my family has elderly members at home. What should we do today?',
-      mode: 'assistant',
-      airQuality: {
-        locationName: snapshot.location.name,
-        country: snapshot.location.country,
-        aqi: snapshot.aqi,
-        aqiScale: snapshot.aqiScale,
-        aqiStatus: snapshot.aqiStatus,
-        dominantPollutant: snapshot.dominantPollutant,
-        pollutants: snapshot.pollutants.map((p) => ({
-          code: p.code,
-          value: p.value,
-          unit: p.unit,
-          status: p.status,
-        })),
-        trendSummary: snapshot.trendSummary,
-        dataSource: snapshot.dataSource,
-        lastUpdated: snapshot.lastUpdated,
-        freshness: snapshot.freshness,
-      },
-      household,
-    });
+    const aiRes = await request(app)
+      .post('/api/ai/assist')
+      .send({
+        question:
+          'The AQI in my area is very poor. I need to commute to college and my family has elderly members at home. What should we do today?',
+        mode: 'assistant',
+        airQuality: {
+          locationName: snapshot.location.name,
+          country: snapshot.location.country,
+          aqi: snapshot.aqi,
+          aqiScale: snapshot.aqiScale,
+          aqiStatus: snapshot.aqiStatus,
+          dominantPollutant: snapshot.dominantPollutant,
+          pollutants: snapshot.pollutants.map((p) => ({
+            code: p.code,
+            value: p.value,
+            unit: p.unit,
+            status: p.status,
+          })),
+          trendSummary: snapshot.trendSummary,
+          dataSource: snapshot.dataSource,
+          lastUpdated: snapshot.lastUpdated,
+          freshness: snapshot.freshness,
+        },
+        household,
+      });
     expect(aiRes.status).toBe(200);
     expect(aiRes.body.response.recommendations.length).toBeGreaterThanOrEqual(2);
 
@@ -199,11 +210,7 @@ describe('End-to-End 10-Step User Journey', () => {
       isOutdoor: true,
       currentTransport: 'public_transit',
     };
-    const routineRec = generateRoutineRecommendation(
-      commuteRoutine,
-      snapshot,
-      household,
-    );
+    const routineRec = generateRoutineRecommendation(commuteRoutine, snapshot, household);
     expect(routineRec.exposureLevel).toBe('high');
     expect(routineRec.healthOverEmissionsNote).toContain('skip cycling');
 

@@ -1,10 +1,7 @@
 import { GoogleGenAI, Type } from '@google/genai';
 import type { z } from 'zod';
-import {
-  aiAssistantRequestSchema,
-  sanitizeUserText,
-  structuredAIResponseSchema,
-} from '../schemas/index.ts';
+import { sanitizeUserText, structuredAIResponseSchema } from '../schemas/index.ts';
+import type { aiAssistantRequestSchema } from '../schemas/index.ts';
 import type { StructuredAIResponse } from '../types/index.ts';
 
 export type AIAssistantRequest = z.infer<typeof aiAssistantRequestSchema>;
@@ -31,7 +28,8 @@ const RESPONSE_SCHEMA = {
   properties: {
     summary: {
       type: Type.STRING,
-      description: 'Plain-language explanation of the air quality situation and key takeaway.',
+      description:
+        'Plain-language explanation of the air quality situation and key takeaway.',
     },
     air_quality_context: {
       type: Type.OBJECT,
@@ -229,9 +227,7 @@ export function createGeminiService(options?: {
   const runner = options?.generateFn ?? defaultGenerate;
 
   return {
-    async generateGuidance(
-      request: AIAssistantRequest,
-    ): Promise<StructuredAIResponse> {
+    async generateGuidance(request: AIAssistantRequest): Promise<StructuredAIResponse> {
       const prompt = buildGroundedPrompt(request);
 
       let timer: ReturnType<typeof setTimeout> | undefined;

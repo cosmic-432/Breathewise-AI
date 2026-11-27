@@ -10,10 +10,17 @@ import type {
   StructuredAIResponse,
 } from '../types/index.ts';
 import { formatReadableTimestamp } from '../utils/aqi.ts';
+import { isOneOf } from '../utils/typeGuards.ts';
 
 interface CommunityPageProps {
   state: BreatheWiseState;
 }
+
+const REPORT_CATEGORIES: readonly CommunityReport['category'][] = [
+  'tip',
+  'initiative',
+  'observation',
+];
 
 export function CommunityPage({ state }: CommunityPageProps) {
   const { location, snapshot } = state;
@@ -54,9 +61,7 @@ export function CommunityPage({ state }: CommunityPageProps) {
       .catch((err) => {
         if (err instanceof DOMException && err.name === 'AbortError') return;
         setError(
-          err instanceof Error
-            ? err.message
-            : 'Unable to load community hub right now.',
+          err instanceof Error ? err.message : 'Unable to load community hub right now.',
         );
       })
       .finally(() => setLoading(false));
@@ -87,9 +92,7 @@ export function CommunityPage({ state }: CommunityPageProps) {
         localStore.setJoinedChallenges(next);
       }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Could not record participation.',
-      );
+      setError(err instanceof Error ? err.message : 'Could not record participation.');
     } finally {
       setBusyId(null);
     }
@@ -149,7 +152,8 @@ export function CommunityPage({ state }: CommunityPageProps) {
             Community Action Hub
           </h1>
           <p className="text-sm text-[#66786E] mt-1">
-            Voluntary low-emission challenges, clean-air tips, and neighborhood initiatives with genuine participation tracking.
+            Voluntary low-emission challenges, clean-air tips, and neighborhood
+            initiatives with genuine participation tracking.
           </p>
         </div>
 
@@ -180,7 +184,8 @@ export function CommunityPage({ state }: CommunityPageProps) {
           </div>
         </div>
         <p className="text-xs text-[#66786E] max-w-md">
-          All counts reflect real recorded actions on this BreatheWise instance — we never fabricate participation figures or expose home addresses.
+          All counts reflect real recorded actions on this BreatheWise instance — we never
+          fabricate participation figures or expose home addresses.
         </p>
       </div>
 
@@ -213,10 +218,7 @@ export function CommunityPage({ state }: CommunityPageProps) {
 
       {/* Voluntary Challenges */}
       <section aria-labelledby="challenges-heading" className="space-y-3">
-        <h2
-          id="challenges-heading"
-          className="text-base font-semibold text-[#20332B]"
-        >
+        <h2 id="challenges-heading" className="text-base font-semibold text-[#20332B]">
           Voluntary Low-Emission Challenges
         </h2>
 
@@ -242,9 +244,7 @@ export function CommunityPage({ state }: CommunityPageProps) {
                         {ch.participantsCount} joined · {ch.actionsLoggedCount} logged
                       </span>
                     </div>
-                    <h3 className="text-base font-semibold text-[#20332B]">
-                      {ch.title}
-                    </h3>
+                    <h3 className="text-base font-semibold text-[#20332B]">{ch.title}</h3>
                     <p className="text-sm text-[#66786E] leading-relaxed">
                       {ch.description}
                     </p>
@@ -295,14 +295,12 @@ export function CommunityPage({ state }: CommunityPageProps) {
           className="lg:col-span-5 rounded-xl border border-[#E1EAE4] bg-white p-6 space-y-4"
         >
           <div>
-            <h2
-              id="share-tip-heading"
-              className="text-base font-semibold text-[#20332B]"
-            >
+            <h2 id="share-tip-heading" className="text-base font-semibold text-[#20332B]">
               Share a Clean-Air Tip or Local Initiative
             </h2>
             <p className="text-xs text-[#66786E] mt-0.5">
-              Protect privacy: enter only a general city or district name — never share home street addresses or personal contact details.
+              Protect privacy: enter only a general city or district name — never share
+              home street addresses or personal contact details.
             </p>
           </div>
 
@@ -337,9 +335,11 @@ export function CommunityPage({ state }: CommunityPageProps) {
                 <select
                   id="comm-cat"
                   value={category}
-                  onChange={(e) =>
-                    setCategory(e.target.value as CommunityReport['category'])
-                  }
+                  onChange={(e) => {
+                    if (isOneOf(e.target.value, REPORT_CATEGORIES)) {
+                      setCategory(e.target.value);
+                    }
+                  }}
                   className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm text-[#20332B]"
                 >
                   <option value="tip">Community Tip</option>
@@ -397,9 +397,7 @@ export function CommunityPage({ state }: CommunityPageProps) {
               {submittingReport ? 'Publishing...' : 'Post to Community Feed'}
             </button>
 
-            {reportFeedback && (
-              <p className="text-xs text-[#237A57]">{reportFeedback}</p>
-            )}
+            {reportFeedback && <p className="text-xs text-[#237A57]">{reportFeedback}</p>}
           </form>
         </section>
 
@@ -408,10 +406,7 @@ export function CommunityPage({ state }: CommunityPageProps) {
           className="lg:col-span-7 rounded-xl border border-[#E1EAE4] bg-white p-6 space-y-4"
         >
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2
-              id="comm-feed-heading"
-              className="text-base font-semibold text-[#20332B]"
-            >
+            <h2 id="comm-feed-heading" className="text-base font-semibold text-[#20332B]">
               Community Tips &amp; Local Reports ({reports.length})
             </h2>
             <span className="text-xs text-[#66786E]">
@@ -421,16 +416,15 @@ export function CommunityPage({ state }: CommunityPageProps) {
 
           {reports.length === 0 ? (
             <p className="text-sm text-[#66786E] py-4">
-              No community posts yet. Share the first clean-air tip or neighborhood initiative from the form on the left.
+              No community posts yet. Share the first clean-air tip or neighborhood
+              initiative from the form on the left.
             </p>
           ) : (
             <ul className="divide-y divide-[#E1EAE4]">
               {reports.map((rep) => (
                 <li key={rep.id} className="py-4 first:pt-0 last:pb-0 space-y-1.5">
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-[#66786E]">
-                    <span className="font-medium text-[#20332B]">
-                      {rep.areaLabel}
-                    </span>
+                    <span className="font-medium text-[#20332B]">{rep.areaLabel}</span>
                     <span aria-hidden="true">·</span>
                     <span className="capitalize">{rep.category}</span>
                     <span aria-hidden="true">·</span>
@@ -440,9 +434,7 @@ export function CommunityPage({ state }: CommunityPageProps) {
                       {formatReadableTimestamp(rep.createdAt)}
                     </span>
                   </div>
-                  <h3 className="text-sm font-semibold text-[#20332B]">
-                    {rep.title}
-                  </h3>
+                  <h3 className="text-sm font-semibold text-[#20332B]">{rep.title}</h3>
                   <p className="text-sm text-[#66786E] leading-relaxed">
                     {rep.description}
                   </p>

@@ -11,10 +11,26 @@ import type {
   StructuredAIResponse,
 } from '../types/index.ts';
 import { interpretAqi } from '../utils/aqi.ts';
+import { isOneOf } from '../utils/typeGuards.ts';
 
 interface FamilyProtectionPageProps {
   state: BreatheWiseState;
 }
+
+const VENTILATION_SETUP_OPTIONS: readonly HouseholdProfile['ventilationSetup'][] = [
+  'mixed',
+  'natural_windows',
+  'closed_ac',
+  'purifier_assisted',
+];
+
+const CHECKLIST_AUDIENCES: readonly FamilyChecklistItem['audience'][] = [
+  'household',
+  'children',
+  'older_adults',
+  'sensitive',
+  'outdoor_workers',
+];
 
 const AGE_GROUP_OPTIONS: Array<{ id: AgeGroup; label: string }> = [
   { id: 'children_under_12', label: 'Children (under 12)' },
@@ -119,7 +135,8 @@ export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
             Family Protection Mode
           </h1>
           <p className="text-sm text-[#66786E] mt-1">
-            Practical household exposure-reduction planning for children, older adults, sensitive members, and outdoor workers.
+            Practical household exposure-reduction planning for children, older adults,
+            sensitive members, and outdoor workers.
           </p>
         </div>
         <button
@@ -146,7 +163,8 @@ export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
               Household Profile
             </h2>
             <p className="text-xs text-[#66786E] mt-0.5">
-              Stored only in your browser. No names, birth dates, addresses, or medical records are collected.
+              Stored only in your browser. No names, birth dates, addresses, or medical
+              records are collected.
             </p>
           </div>
 
@@ -184,12 +202,14 @@ export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
               <select
                 id="home-ventilation"
                 value={household.ventilationSetup}
-                onChange={(e) =>
-                  setHousehold({
-                    ...household,
-                    ventilationSetup: e.target.value as HouseholdProfile['ventilationSetup'],
-                  })
-                }
+                onChange={(e) => {
+                  if (isOneOf(e.target.value, VENTILATION_SETUP_OPTIONS)) {
+                    setHousehold({
+                      ...household,
+                      ventilationSetup: e.target.value,
+                    });
+                  }
+                }}
                 className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm text-[#20332B]"
               >
                 <option value="mixed">Mixed natural &amp; fans</option>
@@ -325,9 +345,7 @@ export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] p-4 space-y-1.5">
-                <h3 className="text-sm font-semibold text-[#20332B]">
-                  Children
-                </h3>
+                <h3 className="text-sm font-semibold text-[#20332B]">Children</h3>
                 <p className="text-xs text-[#66786E] leading-relaxed">
                   {isPolluted
                     ? 'Developing lungs breathe faster relative to body weight. Shift active sports indoors today, limit roadside waiting at school gates, and ensure indoor play spaces stay smoke-free.'
@@ -351,14 +369,14 @@ export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
                   Respiratory &amp; Cardiovascular Sensitivities
                 </h3>
                 <p className="text-xs text-[#66786E] leading-relaxed">
-                  Follow your clinician’s existing action plan and keep prescribed reliever medications accessible. Reduce exertion during elevated PM2.5/O3 and seek medical care promptly for worsening symptoms.
+                  Follow your clinician’s existing action plan and keep prescribed
+                  reliever medications accessible. Reduce exertion during elevated
+                  PM2.5/O3 and seek medical care promptly for worsening symptoms.
                 </p>
               </div>
 
               <div className="rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] p-4 space-y-1.5">
-                <h3 className="text-sm font-semibold text-[#20332B]">
-                  Outdoor Workers
-                </h3>
+                <h3 className="text-sm font-semibold text-[#20332B]">Outdoor Workers</h3>
                 <p className="text-xs text-[#66786E] leading-relaxed">
                   {isPolluted
                     ? 'Use a well-fitted N95/FFP2 respirator during high-particulate shifts, schedule indoor recovery breaks, stay hydrated, and shift heavy manual work away from peak traffic hours where feasible.'
@@ -368,7 +386,8 @@ export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
             </div>
 
             <p className="text-xs text-[#66786E]">
-              Note: BreatheWise AI provides general exposure-reduction education and does not diagnose or predict medical conditions.
+              Note: BreatheWise AI provides general exposure-reduction education and does
+              not diagnose or predict medical conditions.
             </p>
           </section>
 
@@ -404,10 +423,7 @@ export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
 
             <ul className="divide-y divide-[#E1EAE4]">
               {checklist.map((item) => (
-                <li
-                  key={item.id}
-                  className="py-3 flex items-start justify-between gap-3"
-                >
+                <li key={item.id} className="py-3 flex items-start justify-between gap-3">
                   <button
                     type="button"
                     onClick={() => toggleChecklist(item.id)}
@@ -472,9 +488,11 @@ export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
               <select
                 aria-label="Audience for checklist item"
                 value={newAudience}
-                onChange={(e) =>
-                  setNewAudience(e.target.value as FamilyChecklistItem['audience'])
-                }
+                onChange={(e) => {
+                  if (isOneOf(e.target.value, CHECKLIST_AUDIENCES)) {
+                    setNewAudience(e.target.value);
+                  }
+                }}
                 className="rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm text-[#20332B]"
               >
                 <option value="household">Whole Household</option>

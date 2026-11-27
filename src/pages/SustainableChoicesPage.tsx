@@ -67,7 +67,8 @@ export function SustainableChoicesPage({
             Sustainable Choices
           </h1>
           <p className="text-sm text-[#66786E] mt-1">
-            Practical, lower-emission alternatives with transparent trade-offs and exposure-safe timing.
+            Practical, lower-emission alternatives with transparent trade-offs and
+            exposure-safe timing.
           </p>
         </div>
 
@@ -114,7 +115,9 @@ export function SustainableChoicesPage({
         </div>
 
         <p className="text-xs text-[#66786E] max-w-md">
-          Individual choices reduce personal emissions and local smoke plumes, but citywide smog also requires collective action, clean transit, and policy measures.
+          Individual choices reduce personal emissions and local smoke plumes, but
+          citywide smog also requires collective action, clean transit, and policy
+          measures.
         </p>
       </div>
 
@@ -175,16 +178,16 @@ export function SustainableChoicesPage({
               <div className="rounded-lg border border-[#D68A35]/40 bg-[#FCF3E6] px-4 py-3 flex items-start gap-2.5 text-xs text-[#8F5818]">
                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
                 <span>
-                  <strong>Defer today:</strong> Current air quality ({aqiInfo.label}) is not safe for vigorous outdoor walking or cycling. Choose enclosed public transit or carpooling until AQI improves.
+                  <strong>Defer today:</strong> Current air quality ({aqiInfo.label}) is
+                  not safe for vigorous outdoor walking or cycling. Choose enclosed public
+                  transit or carpooling until AQI improves.
                 </span>
               </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm border-t border-[#E1EAE4] pt-4">
               <div>
-                <h3 className="text-xs font-semibold text-[#66786E]">
-                  1. Current habit
-                </h3>
+                <h3 className="text-xs font-semibold text-[#66786E]">1. Current habit</h3>
                 <p className="mt-1 text-[#20332B]">{item.currentHabit}</p>
               </div>
               <div>

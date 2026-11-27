@@ -10,6 +10,8 @@ export default defineConfig({
       include: [
         'src/utils/**/*.ts',
         'src/schemas/**/*.ts',
+        'src/storage/**/*.ts',
+        'src/api/**/*.ts',
         'src/services/**/*.ts',
         'src/server/**/*.ts',
         'server.ts',

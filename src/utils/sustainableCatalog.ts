@@ -5,7 +5,8 @@ export const SUSTAINABLE_ALTERNATIVES_CATALOG: SustainableAlternativeItem[] = [
     id: 'trans-public-transit',
     category: 'transportation',
     title: 'Enclosed Metro or Bus Transit for Daily Commutes',
-    currentHabit: 'Driving a single-occupancy petrol or diesel car to college or work daily.',
+    currentHabit:
+      'Driving a single-occupancy petrol or diesel car to college or work daily.',
     suggestedAlternative:
       'Use enclosed metro rail or air-conditioned public buses for trunk commute segments.',
     whyItMatters:
@@ -24,7 +25,8 @@ export const SUSTAINABLE_ALTERNATIVES_CATALOG: SustainableAlternativeItem[] = [
     id: 'trans-carpool',
     category: 'transportation',
     title: 'Neighborhood or Workplace Carpooling',
-    currentHabit: 'Multiple colleagues or classmates driving separate vehicles along the same corridor.',
+    currentHabit:
+      'Multiple colleagues or classmates driving separate vehicles along the same corridor.',
     suggestedAlternative:
       'Coordinate a 2–4 person rotating carpool with cabin air set to recirculate during hazy commutes.',
     whyItMatters:
@@ -42,7 +44,8 @@ export const SUSTAINABLE_ALTERNATIVES_CATALOG: SustainableAlternativeItem[] = [
     id: 'trans-trip-consolidation',
     category: 'transportation',
     title: 'Trip Consolidation for Errands and Groceries',
-    currentHabit: 'Making multiple short solo car or two-wheeler trips throughout the week.',
+    currentHabit:
+      'Making multiple short solo car or two-wheeler trips throughout the week.',
     suggestedAlternative:
       'Batch grocery, pharmacy, and neighborhood errands into one planned loop.',
     whyItMatters:
@@ -53,14 +56,14 @@ export const SUSTAINABLE_ALTERNATIVES_CATALOG: SustainableAlternativeItem[] = [
     ],
     potentialBenefit:
       'Avoids 2–4 cold-start trips per week, lowering both personal outdoor smog exposure and fuel costs.',
-    tradeOffsAndLimitations:
-      'Requires planning ahead for perishables and storage space.',
+    tradeOffsAndLimitations: 'Requires planning ahead for perishables and storage space.',
   },
   {
     id: 'trans-walk-cycle-clean-air',
     category: 'transportation',
     title: 'Walking or Cycling on Clean-Air Days',
-    currentHabit: 'Using motor vehicles for short 1–3 km neighborhood trips even when outdoor air is clean.',
+    currentHabit:
+      'Using motor vehicles for short 1–3 km neighborhood trips even when outdoor air is clean.',
     suggestedAlternative:
       'Walk or cycle along quiet side streets strictly when AQI is Good or Moderate and road conditions are safe.',
     whyItMatters:
@@ -79,7 +82,8 @@ export const SUSTAINABLE_ALTERNATIVES_CATALOG: SustainableAlternativeItem[] = [
     id: 'house-cleaner-cooking',
     category: 'household',
     title: 'Electric Induction or Vented LPG Cooking',
-    currentHabit: 'Cooking on solid fuels (wood, coal, biomass) or using unvented burners without exhaust.',
+    currentHabit:
+      'Cooking on solid fuels (wood, coal, biomass) or using unvented burners without exhaust.',
     suggestedAlternative:
       'Use electric induction or LPG with an externally vented chimney/exhaust fan running during and after cooking.',
     whyItMatters:
@@ -97,7 +101,8 @@ export const SUSTAINABLE_ALTERNATIVES_CATALOG: SustainableAlternativeItem[] = [
     id: 'house-energy-efficiency',
     category: 'household',
     title: 'Trimming Peak Household Electricity Demand',
-    currentHabit: 'Running older cooling/heating units at extreme temperatures and leaving appliances on standby.',
+    currentHabit:
+      'Running older cooling/heating units at extreme temperatures and leaving appliances on standby.',
     suggestedAlternative:
       'Set AC to 24–26°C with ceiling fans, switch to LEDs, clean AC filters monthly, and unplug idle chargers.',
     whyItMatters:
@@ -115,7 +120,8 @@ export const SUSTAINABLE_ALTERNATIVES_CATALOG: SustainableAlternativeItem[] = [
     id: 'house-no-waste-burning',
     category: 'household',
     title: 'Zero Open Waste or Leaf Burning',
-    currentHabit: 'Burning dry garden leaves, cardboard, or household trash outdoors in winter evenings.',
+    currentHabit:
+      'Burning dry garden leaves, cardboard, or household trash outdoors in winter evenings.',
     suggestedAlternative:
       'Compost dry leaves/organics and hand segregated dry waste to municipal collection or recyclers.',
     whyItMatters:
@@ -133,7 +139,8 @@ export const SUSTAINABLE_ALTERNATIVES_CATALOG: SustainableAlternativeItem[] = [
     id: 'comm-shared-school-pool',
     category: 'community',
     title: 'School & Resident Association Clean-Air Carpools',
-    currentHabit: 'Long lines of idling private vehicles outside school gates every morning and afternoon.',
+    currentHabit:
+      'Long lines of idling private vehicles outside school gates every morning and afternoon.',
     suggestedAlternative:
       'Organize no-idling school gate pledges and neighborhood bus/carpool groups through parent associations.',
     whyItMatters:
@@ -151,7 +158,8 @@ export const SUSTAINABLE_ALTERNATIVES_CATALOG: SustainableAlternativeItem[] = [
     id: 'comm-urban-trees',
     category: 'community',
     title: 'Native Tree Protection & Dusty-Patch Mulching',
-    currentHabit: 'Bare roadside soil patches generating windblown PM10 dust and neglected urban saplings.',
+    currentHabit:
+      'Bare roadside soil patches generating windblown PM10 dust and neglected urban saplings.',
     suggestedAlternative:
       'Participate in resident-led native tree maintenance and green-cover stabilization of bare dusty verges.',
     whyItMatters:

@@ -1,3 +1,9 @@
+import {
+  openMeteoAirQualityResponseSchema,
+  openMeteoGeocodeResponseSchema,
+  openMeteoWeatherResponseSchema,
+  waqiStationResponseSchema,
+} from '../../schemas/external.ts';
 import type {
   AirQualitySnapshot,
   AqiScale,
@@ -12,97 +18,9 @@ import {
   evaluateDataFreshness,
   ugPerM3ToMgPerM3,
 } from '../../utils/aqi.ts';
+import { PRESET_LOCATIONS } from './presetLocations.ts';
 
-export const PRESET_LOCATIONS: LocationSelection[] = [
-  {
-    id: 'in-delhi-cp',
-    name: 'New Delhi',
-    neighborhood: 'Connaught Place / Central',
-    region: 'Delhi',
-    country: 'India',
-    countryCode: 'IN',
-    latitude: 28.6315,
-    longitude: 77.2167,
-    source: 'preset',
-  },
-  {
-    id: 'in-delhi-av',
-    name: 'New Delhi',
-    neighborhood: 'Anand Vihar',
-    region: 'Delhi',
-    country: 'India',
-    countryCode: 'IN',
-    latitude: 28.6469,
-    longitude: 77.316,
-    source: 'preset',
-  },
-  {
-    id: 'in-mumbai-bandra',
-    name: 'Mumbai',
-    neighborhood: 'Bandra Kurla Complex',
-    region: 'Maharashtra',
-    country: 'India',
-    countryCode: 'IN',
-    latitude: 19.0653,
-    longitude: 72.8682,
-    source: 'preset',
-  },
-  {
-    id: 'in-bengaluru-indiranagar',
-    name: 'Bengaluru',
-    neighborhood: 'Indiranagar',
-    region: 'Karnataka',
-    country: 'India',
-    countryCode: 'IN',
-    latitude: 12.9784,
-    longitude: 77.6408,
-    source: 'preset',
-  },
-  {
-    id: 'in-pune-shivajinagar',
-    name: 'Pune',
-    neighborhood: 'Shivajinagar',
-    region: 'Maharashtra',
-    country: 'India',
-    countryCode: 'IN',
-    latitude: 18.5308,
-    longitude: 73.8475,
-    source: 'preset',
-  },
-  {
-    id: 'in-kolkata-ballygunge',
-    name: 'Kolkata',
-    neighborhood: 'Ballygunge',
-    region: 'West Bengal',
-    country: 'India',
-    countryCode: 'IN',
-    latitude: 22.528,
-    longitude: 88.3659,
-    source: 'preset',
-  },
-  {
-    id: 'gb-london',
-    name: 'London',
-    neighborhood: 'Westminster',
-    region: 'England',
-    country: 'United Kingdom',
-    countryCode: 'GB',
-    latitude: 51.5072,
-    longitude: -0.1276,
-    source: 'preset',
-  },
-  {
-    id: 'us-los-angeles',
-    name: 'Los Angeles',
-    neighborhood: 'Downtown',
-    region: 'California',
-    country: 'United States',
-    countryCode: 'US',
-    latitude: 34.0522,
-    longitude: -118.2437,
-    source: 'preset',
-  },
-];
+export { PRESET_LOCATIONS };
 
 export interface AirQualityProvider {
   readonly id: string;
@@ -173,8 +91,7 @@ function computeShortTermTrend(
       summary: 'Short-term forecast unavailable.',
     };
   }
-  const avgNext6h =
-    upcoming.reduce((acc, v) => acc + v, 0) / upcoming.length;
+  const avgNext6h = upcoming.reduce((acc, v) => acc + v, 0) / upcoming.length;
   const delta = Math.round(avgNext6h - currentAqi);
   if (delta <= -12) {
     return {
@@ -201,8 +118,10 @@ function determineDominantPollutant(pollutants: PollutantReading[]): string | nu
   const no2 = pollutants.find((p) => p.code === 'NO2')?.value;
 
   const ratios: Array<{ code: string; ratio: number }> = [];
-  if (pm25 !== null && pm25 !== undefined) ratios.push({ code: 'PM2.5', ratio: pm25 / 35 });
-  if (pm10 !== null && pm10 !== undefined) ratios.push({ code: 'PM10', ratio: pm10 / 100 });
+  if (pm25 !== null && pm25 !== undefined)
+    ratios.push({ code: 'PM2.5', ratio: pm25 / 35 });
+  if (pm10 !== null && pm10 !== undefined)
+    ratios.push({ code: 'PM10', ratio: pm10 / 100 });
   if (o3 !== null && o3 !== undefined) ratios.push({ code: 'O3', ratio: o3 / 100 });
   if (no2 !== null && no2 !== undefined) ratios.push({ code: 'NO2', ratio: no2 / 80 });
 
@@ -226,18 +145,13 @@ async function fetchOpenMeteoWeather(
     if (!res.ok) {
       throw new Error(`Weather HTTP ${res.status}`);
     }
-    const data = (await res.json()) as {
-      current?: {
-        time?: string;
-        temperature_2m?: number;
-        relative_humidity_2m?: number;
-        wind_speed_10m?: number;
-      };
-    };
-    const c = data.current;
-    if (!c) {
-      throw new Error('Weather payload missing current field');
+    const raw: unknown = await res.json();
+    const parsed = openMeteoWeatherResponseSchema.safeParse(raw);
+    if (!parsed.success || !parsed.data.current) {
+      throw new Error('Weather payload failed schema validation');
     }
+
+    const c = parsed.data.current;
     const temp =
       typeof c.temperature_2m === 'number' && Number.isFinite(c.temperature_2m)
         ? Number(c.temperature_2m.toFixed(1))
@@ -277,7 +191,7 @@ async function fetchOpenMeteoWeather(
 
 /**
  * Primary open environmental adapter: Open-Meteo Air Quality API (CAMS atmospheric models + forecasts).
- * Transparently marks readings as model-estimated and handles every pollutant individually.
+ * Transparently marks readings as model-estimated and validates external JSON via Zod before use.
  */
 export class OpenMeteoAirQualityProvider implements AirQualityProvider {
   readonly id = 'open-meteo-cams';
@@ -306,30 +220,13 @@ export class OpenMeteoAirQualityProvider implements AirQualityProvider {
       throw new Error(`Open-Meteo Air Quality responded with HTTP ${aqRes.status}`);
     }
 
-    const payload = (await aqRes.json()) as {
-      current?: {
-        time?: string;
-        us_aqi?: number | null;
-        pm2_5?: number | null;
-        pm10?: number | null;
-        nitrogen_dioxide?: number | null;
-        sulphur_dioxide?: number | null;
-        carbon_monoxide?: number | null;
-        ozone?: number | null;
-      };
-      hourly?: {
-        time?: string[];
-        us_aqi?: Array<number | null>;
-        pm2_5?: Array<number | null>;
-        pm10?: Array<number | null>;
-      };
-    };
-
-    const current = payload.current;
-    if (!current) {
-      throw new Error('Air quality provider returned an empty current reading.');
+    const raw: unknown = await aqRes.json();
+    const validated = openMeteoAirQualityResponseSchema.safeParse(raw);
+    if (!validated.success || !validated.data.current) {
+      throw new Error('Air quality provider returned an invalid payload.');
     }
 
+    const { current, hourly } = validated.data;
     const pm25 = toNumberOrNull(current.pm2_5);
     const pm10 = toNumberOrNull(current.pm10);
     const no2 = toNumberOrNull(current.nitrogen_dioxide);
@@ -407,10 +304,10 @@ export class OpenMeteoAirQualityProvider implements AirQualityProvider {
     }
 
     const hourlyForecast: HourlyAqiPoint[] = [];
-    const times = payload.hourly?.time ?? [];
-    const usAqis = payload.hourly?.us_aqi ?? [];
-    const pm25s = payload.hourly?.pm2_5 ?? [];
-    const pm10s = payload.hourly?.pm10 ?? [];
+    const times = hourly?.time ?? [];
+    const usAqis = hourly?.us_aqi ?? [];
+    const pm25s = hourly?.pm2_5 ?? [];
+    const pm10s = hourly?.pm10 ?? [];
 
     const nowMs = Date.now();
     for (let i = 0; i < times.length; i++) {
@@ -438,10 +335,7 @@ export class OpenMeteoAirQualityProvider implements AirQualityProvider {
       : new Date().toISOString();
     const fetchedAt = new Date().toISOString();
     const freshness = evaluateDataFreshness(lastUpdated).status;
-    const { trend, summary: trendSummary } = computeShortTermTrend(
-      aqi,
-      hourlyForecast,
-    );
+    const { trend, summary: trendSummary } = computeShortTermTrend(aqi, hourlyForecast);
 
     return {
       location,
@@ -501,32 +395,22 @@ export class WaqiStationProvider implements AirQualityProvider {
       throw new Error(`WAQI responded with HTTP ${res.status}`);
     }
 
-    const body = (await res.json()) as {
-      status?: string;
-      data?: {
-        aqi?: number | string;
-        dominentpol?: string;
-        city?: { name?: string };
-        attributions?: Array<{ name?: string }>;
-        time?: { iso?: string };
-        iaqi?: Record<string, { v?: number }>;
-      };
-    };
-
-    if (body.status !== 'ok' || !body.data) {
-      throw new Error('WAQI returned non-ok status');
+    const raw: unknown = await res.json();
+    const validated = waqiStationResponseSchema.safeParse(raw);
+    if (!validated.success || validated.data.status !== 'ok' || !validated.data.data) {
+      throw new Error('WAQI returned non-ok or schema-invalid response');
     }
 
+    const station = validated.data.data;
     const rawAqi =
-      typeof body.data.aqi === 'number'
-        ? body.data.aqi
-        : Number.isFinite(Number(body.data.aqi))
-        ? Number(body.data.aqi)
-        : null;
+      typeof station.aqi === 'number'
+        ? station.aqi
+        : Number.isFinite(Number(station.aqi))
+          ? Number(station.aqi)
+          : null;
 
-    const iaqi = body.data.iaqi ?? {};
-    const readIaqi = (key: string): number | null =>
-      toNumberOrNull(iaqi[key]?.v);
+    const iaqi = station.iaqi ?? {};
+    const readIaqi = (key: string): number | null => toNumberOrNull(iaqi[key]?.v);
 
     const pollutants: PollutantReading[] = [
       {
@@ -573,9 +457,9 @@ export class WaqiStationProvider implements AirQualityProvider {
       },
     ];
 
-    const lastUpdated = body.data.time?.iso ?? null;
+    const lastUpdated = station.time?.iso ?? null;
     const attributionNames =
-      body.data.attributions
+      station.attributions
         ?.map((a) => a.name)
         .filter((n): n is string => Boolean(n))
         .join(' · ') || this.name;
@@ -585,15 +469,16 @@ export class WaqiStationProvider implements AirQualityProvider {
       aqi: rawAqi,
       aqiScale: 'US_EPA',
       aqiStatus: rawAqi !== null ? 'measured' : 'unavailable',
-      dominantPollutant: body.data.dominentpol?.toUpperCase() ?? null,
+      dominantPollutant: station.dominentpol?.toUpperCase() ?? null,
       pollutants,
       weather,
       hourlyForecast: [],
       trend: 'unavailable',
-      trendSummary: 'Ground station feed reports current measurements without hourly forecast.',
+      trendSummary:
+        'Ground station feed reports current measurements without hourly forecast.',
       dataSource: attributionNames,
       providerId: this.id,
-      stationName: body.data.city?.name,
+      stationName: station.city?.name,
       lastUpdated,
       fetchedAt: new Date().toISOString(),
       cached: false,
@@ -666,27 +551,20 @@ export class AirQualityService {
       }
     }
 
-    const errors: string[] = [];
     for (const provider of this.providers) {
       if (!provider.supportsLocation(location)) continue;
       try {
-        const snapshot = await provider.fetchAirQuality(
-          location,
-          this.fetchImpl,
-        );
+        const snapshot = await provider.fetchAirQuality(location, this.fetchImpl);
         this.setBoundedCache(this.cache, key, {
           snapshot,
           expiresAt: Date.now() + CACHE_TTL_MS,
         });
         return snapshot;
-      } catch (err) {
-        errors.push(
-          `${provider.id}: ${err instanceof Error ? err.message : 'unknown error'}`,
-        );
+      } catch {
+        // Try next configured provider; never silently substitute another city
       }
     }
 
-    // Never invent or substitute another city's AQI: return explicit unavailable state.
     return {
       location,
       aqi: null,
@@ -694,12 +572,48 @@ export class AirQualityService {
       aqiStatus: 'unavailable',
       dominantPollutant: null,
       pollutants: [
-        { code: 'PM2.5', label: 'Fine Particulate Matter', value: null, unit: 'µg/m³', status: 'unavailable' },
-        { code: 'PM10', label: 'Coarse Particulate Matter', value: null, unit: 'µg/m³', status: 'unavailable' },
-        { code: 'NO2', label: 'Nitrogen Dioxide', value: null, unit: 'µg/m³', status: 'unavailable' },
-        { code: 'SO2', label: 'Sulfur Dioxide', value: null, unit: 'µg/m³', status: 'unavailable' },
-        { code: 'CO', label: 'Carbon Monoxide', value: null, unit: 'mg/m³', status: 'unavailable' },
-        { code: 'O3', label: 'Ground-Level Ozone', value: null, unit: 'µg/m³', status: 'unavailable' },
+        {
+          code: 'PM2.5',
+          label: 'Fine Particulate Matter',
+          value: null,
+          unit: 'µg/m³',
+          status: 'unavailable',
+        },
+        {
+          code: 'PM10',
+          label: 'Coarse Particulate Matter',
+          value: null,
+          unit: 'µg/m³',
+          status: 'unavailable',
+        },
+        {
+          code: 'NO2',
+          label: 'Nitrogen Dioxide',
+          value: null,
+          unit: 'µg/m³',
+          status: 'unavailable',
+        },
+        {
+          code: 'SO2',
+          label: 'Sulfur Dioxide',
+          value: null,
+          unit: 'µg/m³',
+          status: 'unavailable',
+        },
+        {
+          code: 'CO',
+          label: 'Carbon Monoxide',
+          value: null,
+          unit: 'mg/m³',
+          status: 'unavailable',
+        },
+        {
+          code: 'O3',
+          label: 'Ground-Level Ozone',
+          value: null,
+          unit: 'µg/m³',
+          status: 'unavailable',
+        },
       ],
       weather: {
         temperatureC: null,
@@ -740,20 +654,14 @@ export class AirQualityService {
     if (!res.ok) {
       throw new Error(`Geocoding service responded with HTTP ${res.status}`);
     }
-    const data = (await res.json()) as {
-      results?: Array<{
-        id?: number;
-        name: string;
-        admin1?: string;
-        admin2?: string;
-        country?: string;
-        country_code?: string;
-        latitude: number;
-        longitude: number;
-      }>;
-    };
 
-    const results: LocationSelection[] = (data.results ?? []).map((item) => ({
+    const raw: unknown = await res.json();
+    const validated = openMeteoGeocodeResponseSchema.safeParse(raw);
+    if (!validated.success) {
+      throw new Error('Geocoding service returned an invalid payload.');
+    }
+
+    const results: LocationSelection[] = (validated.data.results ?? []).map((item) => ({
       id: `geo-${item.id ?? `${item.latitude.toFixed(2)}-${item.longitude.toFixed(2)}`}`,
       name: item.name,
       neighborhood: item.admin2 && item.admin2 !== item.name ? item.admin2 : undefined,

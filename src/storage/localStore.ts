@@ -1,3 +1,14 @@
+import { z } from 'zod';
+import {
+  chatTurnSchema,
+  familyChecklistItemSchema,
+  historicalAqiRecordSchema,
+  householdProfileSchema,
+  indoorConditionsSchema,
+  locationSelectionSchema,
+  recordedImpactActionSchema,
+  routineActivitySchema,
+} from '../schemas/storage.ts';
 import type {
   AirQualitySnapshot,
   ChatTurn,
@@ -124,12 +135,26 @@ export const DEFAULT_CHECKLIST: FamilyChecklistItem[] = [
   },
 ];
 
-function safeRead<T>(key: string, fallback: T): T {
+const routinesArraySchema = z.array(routineActivitySchema);
+const checklistArraySchema = z.array(familyChecklistItemSchema);
+const impactActionsArraySchema = z.array(recordedImpactActionSchema);
+const aqiHistoryArraySchema = z.array(historicalAqiRecordSchema);
+const chatHistoryArraySchema = z.array(chatTurnSchema);
+const stringArraySchema = z.array(z.string());
+const clientTokenSchema = z.string().min(12).max(128);
+
+/**
+ * Safely reads and validates persisted localStorage data against a Zod schema.
+ * Falls back cleanly on missing, malformed, or schema-incompatible entries.
+ */
+function safeRead<T>(key: string, schema: z.ZodType<T>, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
   try {
     const raw = window.localStorage.getItem(key);
     if (!raw) return fallback;
-    return JSON.parse(raw) as T;
+    const parsed: unknown = JSON.parse(raw);
+    const result = schema.safeParse(parsed);
+    return result.success ? result.data : fallback;
   } catch {
     return fallback;
   }
@@ -140,43 +165,41 @@ function safeWrite<T>(key: string, value: T): void {
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    // Ignore quota errors gracefully
+    // Ignore storage quota or private-mode errors gracefully
   }
 }
 
 export const localStore = {
   getLocation: (): LocationSelection =>
-    safeRead<LocationSelection>(STORAGE_KEYS.location, DEFAULT_LOCATION),
-  setLocation: (loc: LocationSelection): void =>
-    safeWrite(STORAGE_KEYS.location, loc),
+    safeRead(STORAGE_KEYS.location, locationSelectionSchema, DEFAULT_LOCATION),
+  setLocation: (loc: LocationSelection): void => safeWrite(STORAGE_KEYS.location, loc),
 
   getHousehold: (): HouseholdProfile =>
-    safeRead<HouseholdProfile>(STORAGE_KEYS.household, DEFAULT_HOUSEHOLD),
+    safeRead(STORAGE_KEYS.household, householdProfileSchema, DEFAULT_HOUSEHOLD),
   setHousehold: (profile: HouseholdProfile): void =>
     safeWrite(STORAGE_KEYS.household, profile),
 
   getRoutines: (): RoutineActivity[] =>
-    safeRead<RoutineActivity[]>(STORAGE_KEYS.routines, DEFAULT_ROUTINES),
+    safeRead(STORAGE_KEYS.routines, routinesArraySchema, DEFAULT_ROUTINES),
   setRoutines: (items: RoutineActivity[]): void =>
     safeWrite(STORAGE_KEYS.routines, items),
 
   getIndoor: (): IndoorConditions =>
-    safeRead<IndoorConditions>(STORAGE_KEYS.indoor, DEFAULT_INDOOR),
-  setIndoor: (cond: IndoorConditions): void =>
-    safeWrite(STORAGE_KEYS.indoor, cond),
+    safeRead(STORAGE_KEYS.indoor, indoorConditionsSchema, DEFAULT_INDOOR),
+  setIndoor: (cond: IndoorConditions): void => safeWrite(STORAGE_KEYS.indoor, cond),
 
   getChecklist: (): FamilyChecklistItem[] =>
-    safeRead<FamilyChecklistItem[]>(STORAGE_KEYS.checklist, DEFAULT_CHECKLIST),
+    safeRead(STORAGE_KEYS.checklist, checklistArraySchema, DEFAULT_CHECKLIST),
   setChecklist: (items: FamilyChecklistItem[]): void =>
     safeWrite(STORAGE_KEYS.checklist, items),
 
   getImpactActions: (): RecordedImpactAction[] =>
-    safeRead<RecordedImpactAction[]>(STORAGE_KEYS.impactActions, []),
+    safeRead(STORAGE_KEYS.impactActions, impactActionsArraySchema, []),
   setImpactActions: (items: RecordedImpactAction[]): void =>
     safeWrite(STORAGE_KEYS.impactActions, items),
 
   getAqiHistory: (): HistoricalAqiRecord[] =>
-    safeRead<HistoricalAqiRecord[]>(STORAGE_KEYS.aqiHistory, []),
+    safeRead(STORAGE_KEYS.aqiHistory, aqiHistoryArraySchema, []),
 
   /**
    * Appends ONLY real retrieved AQI snapshots (never fabricates historical entries).
@@ -199,12 +222,9 @@ export const localStore = {
       }
     }
 
-    const pm25 =
-      snapshot.pollutants.find((p) => p.code === 'PM2.5')?.value ?? null;
-    const pm10 =
-      snapshot.pollutants.find((p) => p.code === 'PM10')?.value ?? null;
-    const no2 =
-      snapshot.pollutants.find((p) => p.code === 'NO2')?.value ?? null;
+    const pm25 = snapshot.pollutants.find((p) => p.code === 'PM2.5')?.value ?? null;
+    const pm10 = snapshot.pollutants.find((p) => p.code === 'PM10')?.value ?? null;
+    const no2 = snapshot.pollutants.find((p) => p.code === 'NO2')?.value ?? null;
 
     const record: HistoricalAqiRecord = {
       id: `hist-${nowMs}-${Math.random().toString(36).slice(2, 7)}`,
@@ -227,20 +247,20 @@ export const localStore = {
   },
 
   getChatHistory: (): ChatTurn[] =>
-    safeRead<ChatTurn[]>(STORAGE_KEYS.chatHistory, []),
+    safeRead(STORAGE_KEYS.chatHistory, chatHistoryArraySchema, []),
   setChatHistory: (turns: ChatTurn[]): void =>
     safeWrite(STORAGE_KEYS.chatHistory, turns.slice(-24)),
 
   getJoinedChallenges: (): string[] =>
-    safeRead<string[]>(STORAGE_KEYS.communityJoined, []),
+    safeRead(STORAGE_KEYS.communityJoined, stringArraySchema, []),
   setJoinedChallenges: (ids: string[]): void =>
     safeWrite(STORAGE_KEYS.communityJoined, ids),
 
   getOrCreateClientToken: (): string => {
-    const existing = safeRead<string>(STORAGE_KEYS.clientToken, '');
-    if (existing && existing.length >= 12) return existing;
+    const existing = safeRead(STORAGE_KEYS.clientToken, clientTokenSchema, '');
+    if (existing.length >= 12) return existing;
     const bytes = new Uint8Array(12);
-    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
       crypto.getRandomValues(bytes);
     } else {
       for (let i = 0; i < bytes.length; i++) {

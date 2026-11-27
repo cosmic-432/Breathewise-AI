@@ -15,13 +15,11 @@ import {
   AirQualityService,
   PRESET_LOCATIONS,
 } from './src/services/providers/airQualityProvider.ts';
-import {
-  createGeminiService,
-  GeminiServiceError,
-} from './src/services/geminiService.ts';
+import { createGeminiService, GeminiServiceError } from './src/services/geminiService.ts';
 import { createRateLimiter } from './src/server/rateLimiter.ts';
 import { CommunityStore } from './src/server/communityStore.ts';
 import type { LocationSelection } from './src/types/index.ts';
+import { getNumericHttpStatus } from './src/utils/typeGuards.ts';
 
 export interface ServerDependencies {
   airQualityService?: AirQualityService;
@@ -61,10 +59,7 @@ export function createServerApp(deps?: ServerDependencies): Express {
       'Permissions-Policy',
       'camera=(), microphone=(), payment=(), geolocation=(self)',
     );
-    res.setHeader(
-      'Strict-Transport-Security',
-      'max-age=31536000; includeSubDomains',
-    );
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     res.setHeader(
       'Content-Security-Policy',
       [
@@ -225,39 +220,27 @@ export function createServerApp(deps?: ServerDependencies): Express {
   });
 
   // Malformed JSON / centralized safe error handler (never leaks internals or secrets)
-  app.use(
-    (err: unknown, _req: Request, res: Response, _next: NextFunction): void => {
-      if (
-        err instanceof SyntaxError &&
-        'status' in err &&
-        (err as { status?: number }).status === 400
-      ) {
-        res.status(400).json({
-          error: 'Malformed JSON request body.',
-          code: 'MALFORMED_JSON',
-        });
-        return;
-      }
-      const status =
-        typeof err === 'object' &&
-        err !== null &&
-        'status' in err &&
-        typeof (err as { status?: unknown }).status === 'number'
-          ? (err as { status: number }).status
-          : 500;
-      if (status === 413) {
-        res.status(413).json({
-          error: 'Request payload is too large.',
-          code: 'PAYLOAD_TOO_LARGE',
-        });
-        return;
-      }
-      res.status(500).json({
-        error: 'An unexpected server error occurred. Please try again.',
-        code: 'INTERNAL_ERROR',
+  app.use((err: unknown, _req: Request, res: Response, _next: NextFunction): void => {
+    const httpStatus = getNumericHttpStatus(err);
+    if (err instanceof SyntaxError && httpStatus === 400) {
+      res.status(400).json({
+        error: 'Malformed JSON request body.',
+        code: 'MALFORMED_JSON',
       });
-    },
-  );
+      return;
+    }
+    if (httpStatus === 413) {
+      res.status(413).json({
+        error: 'Request payload is too large.',
+        code: 'PAYLOAD_TOO_LARGE',
+      });
+      return;
+    }
+    res.status(500).json({
+      error: 'An unexpected server error occurred. Please try again.',
+      code: 'INTERNAL_ERROR',
+    });
+  });
 
   return app;
 }

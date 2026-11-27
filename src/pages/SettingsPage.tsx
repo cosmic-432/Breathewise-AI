@@ -3,16 +3,26 @@ import { Download, MapPin, Trash2 } from 'lucide-react';
 import type { BreatheWiseState } from '../hooks/useBreatheWiseState.ts';
 import { localStore } from '../storage/localStore.ts';
 import type { HouseholdProfile } from '../types/index.ts';
+import { isOneOf } from '../utils/typeGuards.ts';
 
 interface SettingsPageProps {
   state: BreatheWiseState;
   onOpenLocationModal: () => void;
 }
 
-export function SettingsPage({
-  state,
-  onOpenLocationModal,
-}: SettingsPageProps) {
+const UNIT_SYSTEM_OPTIONS: readonly HouseholdProfile['preferredUnitSystem'][] = [
+  'metric',
+  'imperial',
+];
+
+const REGION_GRID_OPTIONS: readonly HouseholdProfile['regionGrid'][] = [
+  'india',
+  'global',
+  'us',
+  'eu',
+];
+
+export function SettingsPage({ state, onOpenLocationModal }: SettingsPageProps) {
   const { household, setHousehold, location, resetAllLocalData } = state;
   const [confirmClear, setConfirmClear] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -44,7 +54,8 @@ export function SettingsPage({
           Settings &amp; Privacy
         </h1>
         <p className="text-sm text-[#66786E] mt-1">
-          Manage display units, emission factor region, active location, and full control over your stored data.
+          Manage display units, emission factor region, active location, and full control
+          over your stored data.
         </p>
       </div>
 
@@ -62,10 +73,7 @@ export function SettingsPage({
         aria-labelledby="prefs-heading"
         className="rounded-xl border border-[#E1EAE4] bg-white p-6 space-y-5"
       >
-        <h2
-          id="prefs-heading"
-          className="text-base font-semibold text-[#20332B]"
-        >
+        <h2 id="prefs-heading" className="text-base font-semibold text-[#20332B]">
           Location &amp; Calculation Preferences
         </h2>
 
@@ -99,13 +107,14 @@ export function SettingsPage({
             <select
               id="settings-units"
               value={household.preferredUnitSystem}
-              onChange={(e) =>
-                setHousehold({
-                  ...household,
-                  preferredUnitSystem: e.target
-                    .value as HouseholdProfile['preferredUnitSystem'],
-                })
-              }
+              onChange={(e) => {
+                if (isOneOf(e.target.value, UNIT_SYSTEM_OPTIONS)) {
+                  setHousehold({
+                    ...household,
+                    preferredUnitSystem: e.target.value,
+                  });
+                }
+              }}
               className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm text-[#20332B]"
             >
               <option value="metric">Metric (°C, km, m²)</option>
@@ -123,12 +132,14 @@ export function SettingsPage({
             <select
               id="settings-grid"
               value={household.regionGrid}
-              onChange={(e) =>
-                setHousehold({
-                  ...household,
-                  regionGrid: e.target.value as HouseholdProfile['regionGrid'],
-                })
-              }
+              onChange={(e) => {
+                if (isOneOf(e.target.value, REGION_GRID_OPTIONS)) {
+                  setHousehold({
+                    ...household,
+                    regionGrid: e.target.value,
+                  });
+                }
+              }}
               className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm text-[#20332B]"
             >
               <option value="india">India — CEA v19 (0.727 kg CO2/kWh)</option>
@@ -145,29 +156,32 @@ export function SettingsPage({
         aria-labelledby="privacy-heading"
         className="rounded-xl border border-[#E1EAE4] bg-white p-6 space-y-4"
       >
-        <h2
-          id="privacy-heading"
-          className="text-base font-semibold text-[#20332B]"
-        >
+        <h2 id="privacy-heading" className="text-base font-semibold text-[#20332B]">
           Privacy, Data Handling &amp; Transparency
         </h2>
 
         <ul className="space-y-2 text-sm text-[#66786E] list-disc pl-5">
           <li>
             <strong className="text-[#20332B]">Local-first household storage:</strong>{' '}
-            Your routines, indoor setup, family preferences, and history snapshots are stored locally in your browser. No account login or personal identity information is required.
+            Your routines, indoor setup, family preferences, and history snapshots are
+            stored locally in your browser. No account login or personal identity
+            information is required.
           </li>
           <li>
             <strong className="text-[#20332B]">Server-side AI &amp; data proxy:</strong>{' '}
-            All Gemini API calls and environmental data lookups happen securely on the server with input validation, rate limiting, and no third-party analytics trackers.
+            All Gemini API calls and environmental data lookups happen securely on the
+            server with input validation, rate limiting, and no third-party analytics
+            trackers.
           </li>
           <li>
             <strong className="text-[#20332B]">Location permission is optional:</strong>{' '}
             You can search any city manually without sharing browser GPS coordinates.
           </li>
           <li>
-            <strong className="text-[#20332B]">Multi-user scope note:</strong>{' '}
-            Because BreatheWise AI uses privacy-first browser storage without user accounts, shared community challenges use anonymous hashed tokens and community reports are visible to visitors of this instance.
+            <strong className="text-[#20332B]">Multi-user scope note:</strong> Because
+            BreatheWise AI uses privacy-first browser storage without user accounts,
+            shared community challenges use anonymous hashed tokens and community reports
+            are visible to visitors of this instance.
           </li>
         </ul>
 

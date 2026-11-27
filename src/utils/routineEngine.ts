@@ -44,7 +44,7 @@ function findBestForecastWindow(
     hour: 'numeric',
     minute: '2-digit',
   });
-  let period = 'daytime';
+  let period: string;
   if (hour >= 6 && hour <= 11) period = 'morning';
   else if (hour >= 12 && hour <= 16) period = 'afternoon';
   else if (hour >= 17 && hour <= 20) period = 'evening';
@@ -145,11 +145,19 @@ export function generateRoutineRecommendation(
         'Choose indoor exercise or reduce high-intensity cardio outdoors.',
         'Use parks or quieter streets set back from busy roads.',
       );
-      practicalActions.push('Monitor for coughing, throat irritation, or fatigue and stop early if needed.');
+      practicalActions.push(
+        'Monitor for coughing, throat irritation, or fatigue and stop early if needed.',
+      );
     } else {
-      lowerExposureAlternatives.push('Current air quality supports outdoor movement; still prefer tree-lined paths away from heavy diesel traffic.');
-      sustainableTransportOptions.push('Walking or cycling is safe and low-emission under current air-quality conditions.');
-      practicalActions.push('Hydrate well and check AQI again if smog tends to build later in the evening.');
+      lowerExposureAlternatives.push(
+        'Current air quality supports outdoor movement; still prefer tree-lined paths away from heavy diesel traffic.',
+      );
+      sustainableTransportOptions.push(
+        'Walking or cycling is safe and low-emission under current air-quality conditions.',
+      );
+      practicalActions.push(
+        'Hydrate well and check AQI again if smog tends to build later in the evening.',
+      );
     }
   } else if (
     activity.category === 'school_college_commute' ||
@@ -189,8 +197,12 @@ export function generateRoutineRecommendation(
       sustainableTransportOptions.push(
         'Good conditions for public transit, carpooling, or walking/cycling on safe routes.',
       );
-      lowerExposureAlternatives.push('Choose side streets over main arterial roads when walking or cycling.');
-      practicalActions.push('Plan return commute ahead of peak evening traffic when possible.');
+      lowerExposureAlternatives.push(
+        'Choose side streets over main arterial roads when walking or cycling.',
+      );
+      practicalActions.push(
+        'Plan return commute ahead of peak evening traffic when possible.',
+      );
     }
   } else if (activity.category === 'shopping' || activity.category === 'other') {
     if (isElevated) {
@@ -229,8 +241,12 @@ export function generateRoutineRecommendation(
       healthOverEmissionsNote =
         'For outdoor workers, reducing respiratory exposure is the primary concern; avoid heavy unmasked exertion during poor air alerts.';
     } else {
-      practicalActions.push('Keep protective mask handy if dust or nearby construction spikes localized particulate levels.');
-      lowerExposureAlternatives.push('Position work areas upwind of generators or idling vehicles.');
+      practicalActions.push(
+        'Keep protective mask handy if dust or nearby construction spikes localized particulate levels.',
+      );
+      lowerExposureAlternatives.push(
+        'Position work areas upwind of generators or idling vehicles.',
+      );
     }
   } else {
     // family_activities
@@ -249,9 +265,15 @@ export function generateRoutineRecommendation(
         'Have older adults and sensitive family members keep prescribed rescue medications accessible.',
       );
     } else {
-      lowerExposureAlternatives.push('Outdoor parks away from major roads are comfortable for family outings.');
-      sustainableTransportOptions.push('Walk together or take shared transit to local parks.');
-      practicalActions.push('Check evening AQI before sunset, as winter inversion layers can trap smog quickly.');
+      lowerExposureAlternatives.push(
+        'Outdoor parks away from major roads are comfortable for family outings.',
+      );
+      sustainableTransportOptions.push(
+        'Walk together or take shared transit to local parks.',
+      );
+      practicalActions.push(
+        'Check evening AQI before sunset, as winter inversion layers can trap smog quickly.',
+      );
     }
   }
 
@@ -264,9 +286,13 @@ export function generateRoutineRecommendation(
     );
   }
   if (bestWindow) {
-    reasoningParts.push(`Hourly forecast indicates lower pollution ${bestWindow.windowLabel}.`);
+    reasoningParts.push(
+      `Hourly forecast indicates lower pollution ${bestWindow.windowLabel}.`,
+    );
   } else {
-    reasoningParts.push('No alternate time window is recommended unless hourly forecast data supports a meaningful improvement.');
+    reasoningParts.push(
+      'No alternate time window is recommended unless hourly forecast data supports a meaningful improvement.',
+    );
   }
 
   return {

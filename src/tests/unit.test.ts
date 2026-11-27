@@ -11,10 +11,7 @@ import {
 } from '../utils/aqi.ts';
 import { calculateEnvironmentalImpact } from '../utils/impactCalculator.ts';
 import { generateRoutineRecommendation } from '../utils/routineEngine.ts';
-import {
-  estimateRecommendedCadrM3h,
-  evaluateIndoorAir,
-} from '../utils/indoorAdvisor.ts';
+import { estimateRecommendedCadrM3h, evaluateIndoorAir } from '../utils/indoorAdvisor.ts';
 import {
   aiAssistantRequestSchema,
   communityReportSchema,
@@ -177,9 +174,27 @@ describe('Daily routine and indoor air advisors', () => {
       timestamp: new Date().toISOString(),
     },
     hourlyForecast: [
-      { time: '2026-11-26T08:00:00Z', aqi: 340, pm25: 170, pm10: 240, status: 'estimated' },
-      { time: '2026-11-26T14:00:00Z', aqi: 240, pm25: 100, pm10: 160, status: 'estimated' },
-      { time: '2026-11-26T18:00:00Z', aqi: 360, pm25: 195, pm10: 270, status: 'estimated' },
+      {
+        time: '2026-11-26T08:00:00Z',
+        aqi: 340,
+        pm25: 170,
+        pm10: 240,
+        status: 'estimated',
+      },
+      {
+        time: '2026-11-26T14:00:00Z',
+        aqi: 240,
+        pm25: 100,
+        pm10: 160,
+        status: 'estimated',
+      },
+      {
+        time: '2026-11-26T18:00:00Z',
+        aqi: 360,
+        pm25: 195,
+        pm10: 270,
+        status: 'estimated',
+      },
     ],
     trend: 'worsening',
     trendSummary: 'Rising smog expected.',
@@ -282,10 +297,18 @@ describe('Daily routine and indoor air advisors', () => {
         durationMinutes: 30,
         isOutdoor: true,
       };
-      const cleanRec = generateRoutineRecommendation(act, cleanSnapshot, healthyHousehold);
+      const cleanRec = generateRoutineRecommendation(
+        act,
+        cleanSnapshot,
+        healthyHousehold,
+      );
       expect(cleanRec.exposureLevel).toBe('low');
 
-      const elevRec = generateRoutineRecommendation(act, elevatedSnapshot, healthyHousehold);
+      const elevRec = generateRoutineRecommendation(
+        act,
+        elevatedSnapshot,
+        healthyHousehold,
+      );
       expect(elevRec.exposureLevel).toBe('elevated');
 
       const sevRec = generateRoutineRecommendation(act, severeSnapshot, baseHousehold);
@@ -320,18 +343,28 @@ describe('Daily routine and indoor air advisors', () => {
     expect(res.ventilationStrategy).toContain('cross-ventilation');
     expect(res.priorityActions.some((a) => a.title.includes('tobacco'))).toBe(true);
     expect(res.priorityActions.some((a) => a.title.includes('dry'))).toBe(true);
-    expect(res.priorityActions.some((a) => a.title.includes('cleaner cooking'))).toBe(true);
-    expect(res.priorityActions.some((a) => a.title.includes('filter schedule'))).toBe(true);
+    expect(res.priorityActions.some((a) => a.title.includes('cleaner cooking'))).toBe(
+      true,
+    );
+    expect(res.priorityActions.some((a) => a.title.includes('filter schedule'))).toBe(
+      true,
+    );
 
     const noOutdoor = evaluateIndoorAir(
-      { ...withSensor, hasPurifier: false, filterType: 'none', indoorHumidityPercent: null },
+      {
+        ...withSensor,
+        hasPurifier: false,
+        filterType: 'none',
+        indoorHumidityPercent: null,
+      },
       null,
     );
     expect(noOutdoor.ventilationStrategy).toContain('unavailable');
   });
 
   it('validates sustainable alternatives catalog completeness and trade-off transparency', async () => {
-    const { SUSTAINABLE_ALTERNATIVES_CATALOG } = await import('../utils/sustainableCatalog.ts');
+    const { SUSTAINABLE_ALTERNATIVES_CATALOG } =
+      await import('../utils/sustainableCatalog.ts');
     expect(SUSTAINABLE_ALTERNATIVES_CATALOG.length).toBeGreaterThanOrEqual(8);
     for (const item of SUSTAINABLE_ALTERNATIVES_CATALOG) {
       expect(item.currentHabit.length).toBeGreaterThan(10);
@@ -378,7 +411,8 @@ describe('Input validation, PII prevention, sanitization, and AI output validati
         areaLabel: 'Indiranagar, Bengaluru',
         category: 'initiative',
         title: 'Resident park leaf composting',
-        description: 'Neighborhood volunteers organized dry leaf composting bins near the park entrance.',
+        description:
+          'Neighborhood volunteers organized dry leaf composting bins near the park entrance.',
       }).success,
     ).toBe(true);
   });
@@ -394,9 +428,7 @@ describe('Input validation, PII prevention, sanitization, and AI output validati
         description: 'Short',
       }).success,
     ).toBe(false);
-    expect(
-      aiAssistantRequestSchema.safeParse({ question: 'hi' }).success,
-    ).toBe(false);
+    expect(aiAssistantRequestSchema.safeParse({ question: 'hi' }).success).toBe(false);
   });
 
   it('validates structured AI output, strips markdown fences, and maps upstream errors safely', async () => {
@@ -430,9 +462,9 @@ describe('Input validation, PII prevention, sanitization, and AI output validati
     expect(parsed.summary).toContain('elevated');
 
     expect(() => parseAndValidateAIOutput('not json at all')).toThrow(GeminiServiceError);
-    expect(() => parseAndValidateAIOutput(JSON.stringify({ summary: 'incomplete' }))).toThrow(
-      GeminiServiceError,
-    );
+    expect(() =>
+      parseAndValidateAIOutput(JSON.stringify({ summary: 'incomplete' })),
+    ).toThrow(GeminiServiceError);
 
     const quotaSvc = createGeminiService({
       generateFn: async () => {
