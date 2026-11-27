@@ -1,0 +1,6 @@
+{
+  "name": "BreatheWise AI",
+  "description": "Location-aware GenAI air quality assistant, daily routine planner, indoor air advisor, and environmental impact companion.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
