@@ -63,7 +63,7 @@ export function FamilyChecklistSection({
           >
             Daily Household Checklist
           </h2>
-          <p className="text-xs text-[#66786E]">
+          <p className="text-xs text-[#52645A]">
             {checklist.filter((c) => c.completed).length} of {checklist.length} completed
             today
           </p>
@@ -71,7 +71,7 @@ export function FamilyChecklistSection({
         <button
           type="button"
           onClick={() => onChange(checklist.map((c) => ({ ...c, completed: false })))}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-[#66786E] hover:text-[#20332B]"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-[#52645A] hover:text-[#20332B]"
         >
           <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
           <span>Reset Today</span>
@@ -94,19 +94,19 @@ export function FamilyChecklistSection({
                 />
               ) : (
                 <Square
-                  className="w-4 h-4 text-[#66786E] group-hover:text-[#237A57] mt-0.5 shrink-0"
+                  className="w-4 h-4 text-[#52645A] group-hover:text-[#237A57] mt-0.5 shrink-0"
                   aria-hidden="true"
                 />
               )}
               <div>
                 <span
                   className={`text-sm ${
-                    item.completed ? 'line-through text-[#66786E]' : 'text-[#20332B]'
+                    item.completed ? 'line-through text-[#52645A]' : 'text-[#20332B]'
                   }`}
                 >
                   {item.text}
                 </span>
-                <span className="block text-[11px] text-[#66786E] capitalize">
+                <span className="block text-[11px] text-[#52645A] capitalize">
                   Focus: {item.audience.replace(/_/g, ' ')}
                 </span>
               </div>
@@ -115,7 +115,7 @@ export function FamilyChecklistSection({
               type="button"
               onClick={() => onChange(checklist.filter((c) => c.id !== item.id))}
               aria-label={`Delete checklist item: ${item.text}`}
-              className="text-[#66786E] hover:text-[#C94D53] p-1"
+              className="text-[#52645A] hover:text-[#C94D53] p-1"
             >
               <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
             </button>

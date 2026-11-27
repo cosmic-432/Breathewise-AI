@@ -64,7 +64,7 @@ export function HistoryPage({ state }: HistoryPageProps) {
         <h1 className="text-2xl font-bold tracking-tight text-[#20332B]">
           Air Quality History &amp; Insights
         </h1>
-        <p className="text-sm text-[#66786E] mt-1">
+        <p className="text-sm text-[#52645A] mt-1">
           Stored provider readings are strictly separated from your personal activity
           records. Historical readings are never manufactured.
         </p>
@@ -83,7 +83,7 @@ export function HistoryPage({ state }: HistoryPageProps) {
             >
               1. Retrieved Environmental Readings (Measured / Provider-Supplied)
             </h2>
-            <p className="text-xs text-[#66786E] mt-0.5">
+            <p className="text-xs text-[#52645A] mt-0.5">
               Automatically logged whenever BreatheWise AI retrieves a verified non-null
               snapshot.
             </p>
@@ -103,25 +103,25 @@ export function HistoryPage({ state }: HistoryPageProps) {
         {summaryStats && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="rounded-lg bg-[#F5F8F6] border border-[#E1EAE4] p-3.5">
-              <p className="text-xs text-[#66786E]">Recorded Snapshots</p>
+              <p className="text-xs text-[#52645A]">Recorded Snapshots</p>
               <p className="text-xl font-bold font-mono tabular-nums text-[#20332B] mt-0.5">
                 {summaryStats.count}
               </p>
             </div>
             <div className="rounded-lg bg-[#F5F8F6] border border-[#E1EAE4] p-3.5">
-              <p className="text-xs text-[#66786E]">Average AQI</p>
+              <p className="text-xs text-[#52645A]">Average AQI</p>
               <p className="text-xl font-bold font-mono tabular-nums text-[#20332B] mt-0.5">
                 {summaryStats.avgAqi}
               </p>
             </div>
             <div className="rounded-lg bg-[#F5F8F6] border border-[#E1EAE4] p-3.5">
-              <p className="text-xs text-[#66786E]">Peak Observed AQI</p>
+              <p className="text-xs text-[#52645A]">Peak Observed AQI</p>
               <p className="text-xl font-bold font-mono tabular-nums text-[#C94D53] mt-0.5">
                 {summaryStats.maxAqi}
               </p>
             </div>
             <div className="rounded-lg bg-[#F5F8F6] border border-[#E1EAE4] p-3.5">
-              <p className="text-xs text-[#66786E]">Lowest Observed AQI</p>
+              <p className="text-xs text-[#52645A]">Lowest Observed AQI</p>
               <p className="text-xl font-bold font-mono tabular-nums text-[#237A57] mt-0.5">
                 {summaryStats.minAqi}
               </p>
@@ -130,34 +130,49 @@ export function HistoryPage({ state }: HistoryPageProps) {
         )}
 
         {aqiHistory.length === 0 ? (
-          <p className="text-sm text-[#66786E] py-4">
+          <p className="text-sm text-[#52645A] py-4">
             No historical readings stored yet. As you inspect locations over time, real
             retrieved readings will appear here without fabricating synthetic trends.
           </p>
         ) : showTable || chartData.length < 2 ? (
           <div className="space-y-3">
             {chartData.length < 2 && (
-              <p className="text-xs text-[#66786E]">
+              <p className="text-xs text-[#52645A]">
                 A multi-point trend chart will automatically render once at least 2
                 readings are recorded over time or across locations.
               </p>
             )}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
+                <caption className="sr-only">
+                  Retrieved environmental air quality readings history
+                </caption>
                 <thead>
-                  <tr className="border-b border-[#E1EAE4] text-xs text-[#66786E]">
-                    <th className="py-2 pr-4 font-medium">Timestamp</th>
-                    <th className="py-2 pr-4 font-medium">Location</th>
-                    <th className="py-2 pr-4 font-medium text-right">AQI</th>
-                    <th className="py-2 pr-4 font-medium text-right">PM2.5</th>
-                    <th className="py-2 pr-4 font-medium text-right">PM10</th>
-                    <th className="py-2 font-medium">Source &amp; Status</th>
+                  <tr className="border-b border-[#E1EAE4] text-xs text-[#52645A]">
+                    <th scope="col" className="py-2 pr-4 font-medium">
+                      Timestamp
+                    </th>
+                    <th scope="col" className="py-2 pr-4 font-medium">
+                      Location
+                    </th>
+                    <th scope="col" className="py-2 pr-4 font-medium text-right">
+                      AQI
+                    </th>
+                    <th scope="col" className="py-2 pr-4 font-medium text-right">
+                      PM2.5
+                    </th>
+                    <th scope="col" className="py-2 pr-4 font-medium text-right">
+                      PM10
+                    </th>
+                    <th scope="col" className="py-2 font-medium">
+                      Source &amp; Status
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E1EAE4]">
                   {aqiHistory.map((r) => (
                     <tr key={r.id}>
-                      <td className="py-2.5 pr-4 text-xs font-mono tabular-nums text-[#66786E] whitespace-nowrap">
+                      <td className="py-2.5 pr-4 text-xs font-mono tabular-nums text-[#52645A] whitespace-nowrap">
                         {formatReadableTimestamp(r.recordedAt)}
                       </td>
                       <td className="py-2.5 pr-4 text-[#20332B] font-medium">
@@ -166,13 +181,13 @@ export function HistoryPage({ state }: HistoryPageProps) {
                       <td className="py-2.5 pr-4 text-right font-mono tabular-nums text-[#20332B]">
                         {r.aqi ?? 'N/A'}
                       </td>
-                      <td className="py-2.5 pr-4 text-right font-mono tabular-nums text-[#66786E]">
+                      <td className="py-2.5 pr-4 text-right font-mono tabular-nums text-[#52645A]">
                         {r.pm25 !== null ? `${r.pm25} µg/m³` : 'N/A'}
                       </td>
-                      <td className="py-2.5 pr-4 text-right font-mono tabular-nums text-[#66786E]">
+                      <td className="py-2.5 pr-4 text-right font-mono tabular-nums text-[#52645A]">
                         {r.pm10 !== null ? `${r.pm10} µg/m³` : 'N/A'}
                       </td>
-                      <td className="py-2.5 text-xs text-[#66786E]">
+                      <td className="py-2.5 text-xs text-[#52645A]">
                         {r.dataSource} · {r.status}
                       </td>
                     </tr>
@@ -193,8 +208,8 @@ export function HistoryPage({ state }: HistoryPageProps) {
                 margin={{ top: 10, right: 16, left: -12, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#E1EAE4" />
-                <XAxis dataKey="time" tick={{ fill: '#66786E', fontSize: 11 }} />
-                <YAxis tick={{ fill: '#66786E', fontSize: 12 }} />
+                <XAxis dataKey="time" tick={{ fill: '#52645A', fontSize: 11 }} />
+                <YAxis tick={{ fill: '#52645A', fontSize: 12 }} />
                 <Tooltip />
                 <Legend />
                 <Line
@@ -240,7 +255,7 @@ export function HistoryPage({ state }: HistoryPageProps) {
             >
               2. Household Action &amp; Environmental Impact Progress (User-Generated)
             </h2>
-            <p className="text-xs text-[#66786E] mt-0.5">
+            <p className="text-xs text-[#52645A] mt-0.5">
               Self-reported sustainable actions recorded in your Impact Calculator.
             </p>
           </div>
@@ -250,7 +265,7 @@ export function HistoryPage({ state }: HistoryPageProps) {
         </div>
 
         {impactActions.length === 0 ? (
-          <p className="text-sm text-[#66786E]">
+          <p className="text-sm text-[#52645A]">
             No household sustainable actions recorded yet. Log a carpool, transit, or
             electricity-saving action in &ldquo;My Impact&rdquo; to track progress over
             time.
@@ -264,7 +279,7 @@ export function HistoryPage({ state }: HistoryPageProps) {
               >
                 <div>
                   <p className="font-medium text-[#20332B]">{act.label}</p>
-                  <p className="text-xs text-[#66786E]">
+                  <p className="text-xs text-[#52645A]">
                     Recorded {formatReadableTimestamp(act.dateIso)} · User-generated
                     record
                   </p>

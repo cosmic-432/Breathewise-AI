@@ -38,7 +38,7 @@ export function ImpactResultsPanel({ result }: ImpactResultsPanelProps) {
           >
             Before vs. After Impact Estimate
           </h2>
-          <span className="text-xs text-[#66786E]">
+          <span className="text-xs text-[#52645A]">
             Deterministic formula · No AI-generated arithmetic
           </span>
         </div>
@@ -57,13 +57,13 @@ export function ImpactResultsPanel({ result }: ImpactResultsPanelProps) {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="rounded-lg bg-[#F5F8F6] border border-[#E1EAE4] p-4">
-              <p className="text-xs text-[#66786E]">CO2 Avoided</p>
+              <p className="text-xs text-[#52645A]">CO2 Avoided</p>
               <p className="text-2xl font-bold font-mono tabular-nums text-[#18543F] mt-1">
                 {result.co2AvoidedKg} kg
               </p>
             </div>
             <div className="rounded-lg bg-[#F5F8F6] border border-[#E1EAE4] p-4">
-              <p className="text-xs text-[#66786E]">
+              <p className="text-xs text-[#52645A]">
                 {result.kwhSaved !== null ? 'Electricity Saved' : 'Fuel Saved'}
               </p>
               <p className="text-2xl font-bold font-mono tabular-nums text-[#20332B] mt-1">
@@ -73,7 +73,7 @@ export function ImpactResultsPanel({ result }: ImpactResultsPanelProps) {
               </p>
             </div>
             <div className="rounded-lg bg-[#F5F8F6] border border-[#E1EAE4] p-4">
-              <p className="text-xs text-[#66786E]">Trips Reduced</p>
+              <p className="text-xs text-[#52645A]">Trips Reduced</p>
               <p className="text-2xl font-bold font-mono tabular-nums text-[#20332B] mt-1">
                 {result.tripsReduced}
               </p>
@@ -83,10 +83,17 @@ export function ImpactResultsPanel({ result }: ImpactResultsPanelProps) {
           {comparisonData.length > 0 &&
             (showComparisonTable ? (
               <table className="w-full text-left text-sm border-collapse">
+                <caption className="sr-only">
+                  Before versus after estimated CO2 emissions comparison
+                </caption>
                 <thead>
-                  <tr className="border-b border-[#E1EAE4] text-xs text-[#66786E]">
-                    <th className="py-2 pr-4 font-medium">Scenario</th>
-                    <th className="py-2 font-medium text-right">Estimated CO2 (kg)</th>
+                  <tr className="border-b border-[#E1EAE4] text-xs text-[#52645A]">
+                    <th scope="col" className="py-2 pr-4 font-medium">
+                      Scenario
+                    </th>
+                    <th scope="col" className="py-2 font-medium text-right">
+                      Estimated CO2 (kg)
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E1EAE4]">
@@ -113,7 +120,7 @@ export function ImpactResultsPanel({ result }: ImpactResultsPanelProps) {
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#E1EAE4" />
                     <XAxis dataKey="scenario" tick={{ fill: '#20332B', fontSize: 12 }} />
-                    <YAxis tick={{ fill: '#66786E', fontSize: 12 }} unit=" kg" />
+                    <YAxis tick={{ fill: '#52645A', fontSize: 12 }} unit=" kg" />
                     <Tooltip />
                     <Bar
                       dataKey="co2Kg"
@@ -141,11 +148,11 @@ export function ImpactResultsPanel({ result }: ImpactResultsPanelProps) {
       <dl className="border-t border-[#E1EAE4] pt-4 space-y-2.5 text-xs">
         <div>
           <dt className="font-semibold text-[#20332B] inline">Baseline (Before): </dt>
-          <dd className="inline text-[#66786E]">{result.beforeScenario}</dd>
+          <dd className="inline text-[#52645A]">{result.beforeScenario}</dd>
         </div>
         <div>
           <dt className="font-semibold text-[#20332B] inline">Adopted (After): </dt>
-          <dd className="inline text-[#66786E]">{result.afterScenario}</dd>
+          <dd className="inline text-[#52645A]">{result.afterScenario}</dd>
         </div>
         <div>
           <dt className="font-semibold text-[#20332B] inline">Emission factor: </dt>
@@ -155,19 +162,19 @@ export function ImpactResultsPanel({ result }: ImpactResultsPanelProps) {
         </div>
         <div>
           <dt className="font-semibold text-[#20332B] inline">Units: </dt>
-          <dd className="inline text-[#66786E]">{result.units}</dd>
+          <dd className="inline text-[#52645A]">{result.units}</dd>
         </div>
         <div>
           <dt className="font-semibold text-[#20332B] inline">Data source: </dt>
-          <dd className="inline text-[#66786E]">{result.dataSource}</dd>
+          <dd className="inline text-[#52645A]">{result.dataSource}</dd>
         </div>
         <div>
           <dt className="font-semibold text-[#20332B] inline">Uncertainty: </dt>
-          <dd className="inline text-[#66786E]">{result.uncertainty}</dd>
+          <dd className="inline text-[#52645A]">{result.uncertainty}</dd>
         </div>
         <div>
           <dt className="font-semibold text-[#20332B] inline">Assumptions: </dt>
-          <dd className="inline text-[#66786E]">{result.assumptions.join(' · ')}</dd>
+          <dd className="inline text-[#52645A]">{result.assumptions.join(' · ')}</dd>
         </div>
         <div className="rounded-lg bg-[#F5F8F6] border border-[#E1EAE4] p-3 text-[#20332B]">
           <strong>CO2 vs. Local AQI Distinction: </strong>

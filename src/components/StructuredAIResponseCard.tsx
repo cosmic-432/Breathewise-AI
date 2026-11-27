@@ -14,7 +14,7 @@ export const StructuredAIResponseCard = memo(function StructuredAIResponseCard({
     <div className="space-y-5 text-sm text-[#20332B]">
       <div>
         <p className="leading-relaxed text-[15px] text-[#20332B]">{response.summary}</p>
-        <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#66786E]">
+        <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#52645A]">
           <span className="font-medium text-[#20332B]">{ctx.location}</span>
           <span aria-hidden="true">·</span>
           <span className="font-mono tabular-nums">
@@ -32,9 +32,9 @@ export const StructuredAIResponseCard = memo(function StructuredAIResponseCard({
 
       {response.recommendations.length > 0 && (
         <div className="border-t border-[#E1EAE4] pt-4">
-          <h4 className="text-xs font-semibold text-[#66786E] mb-3">
+          <h3 className="text-xs font-semibold text-[#52645A] mb-3">
             Priority Recommendations
-          </h4>
+          </h3>
           <ol className="space-y-3">
             {response.recommendations.map((rec, idx) => (
               <li key={`${rec.title}-${idx}`} className="space-y-1">
@@ -42,7 +42,7 @@ export const StructuredAIResponseCard = memo(function StructuredAIResponseCard({
                   <span className="font-semibold text-[#20332B]">
                     {idx + 1}. {rec.title}
                   </span>
-                  <span className="text-xs text-[#66786E]">
+                  <span className="text-xs text-[#52645A]">
                     {rec.basis === 'verified_data'
                       ? 'Based on retrieved local data'
                       : 'General guidance'}
@@ -59,9 +59,9 @@ export const StructuredAIResponseCard = memo(function StructuredAIResponseCard({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 border-t border-[#E1EAE4] pt-4">
           {response.indoor_actions.length > 0 && (
             <div>
-              <h4 className="text-xs font-semibold text-[#18543F] mb-2">
+              <h3 className="text-xs font-semibold text-[#18543F] mb-2">
                 Indoor Precautions
-              </h4>
+              </h3>
               <ul className="space-y-1.5 list-disc pl-4 text-sm text-[#20332B]/90">
                 {response.indoor_actions.map((item, i) => (
                   <li key={i}>{item}</li>
@@ -71,9 +71,9 @@ export const StructuredAIResponseCard = memo(function StructuredAIResponseCard({
           )}
           {response.outdoor_actions.length > 0 && (
             <div>
-              <h4 className="text-xs font-semibold text-[#18543F] mb-2">
+              <h3 className="text-xs font-semibold text-[#18543F] mb-2">
                 Outdoor Exposure Reduction
-              </h4>
+              </h3>
               <ul className="space-y-1.5 list-disc pl-4 text-sm text-[#20332B]/90">
                 {response.outdoor_actions.map((item, i) => (
                   <li key={i}>{item}</li>
@@ -89,9 +89,9 @@ export const StructuredAIResponseCard = memo(function StructuredAIResponseCard({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 border-t border-[#E1EAE4] pt-4">
           {response.sustainable_alternatives.length > 0 && (
             <div>
-              <h4 className="text-xs font-semibold text-[#237A57] mb-2">
+              <h3 className="text-xs font-semibold text-[#237A57] mb-2">
                 Lower-Emission Choices (Where Safe)
-              </h4>
+              </h3>
               <ul className="space-y-1.5 list-disc pl-4 text-sm text-[#20332B]/90">
                 {response.sustainable_alternatives.map((item, i) => (
                   <li key={i}>{item}</li>
@@ -101,9 +101,9 @@ export const StructuredAIResponseCard = memo(function StructuredAIResponseCard({
           )}
           {response.impact_explanation.length > 0 && (
             <div>
-              <h4 className="text-xs font-semibold text-[#237A57] mb-2">
+              <h3 className="text-xs font-semibold text-[#237A57] mb-2">
                 Why These Steps Matter
-              </h4>
+              </h3>
               <ul className="space-y-1.5 list-disc pl-4 text-sm text-[#20332B]/90">
                 {response.impact_explanation.map((item, i) => (
                   <li key={i}>{item}</li>
@@ -114,7 +114,7 @@ export const StructuredAIResponseCard = memo(function StructuredAIResponseCard({
         </div>
       )}
 
-      <div className="border-t border-[#E1EAE4] pt-3.5 text-xs text-[#66786E] space-y-1.5">
+      <div className="border-t border-[#E1EAE4] pt-3.5 text-xs text-[#52645A] space-y-1.5">
         {response.limitations.length > 0 && (
           <div>
             <span className="font-semibold text-[#20332B]">

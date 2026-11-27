@@ -30,7 +30,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <h2 className="text-base font-semibold text-[#20332B]">
             This section ran into an unexpected display issue
           </h2>
-          <p className="text-sm text-[#66786E]">
+          <p className="text-sm text-[#52645A]">
             Your saved preferences and data are safe. Try reloading this view.
           </p>
           <button

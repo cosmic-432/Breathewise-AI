@@ -17,27 +17,42 @@ export function ImpactActionsTable({ actions, onRemoveAction }: ImpactActionsTab
       </h2>
 
       {actions.length === 0 ? (
-        <p className="text-sm text-[#66786E]">
+        <p className="text-sm text-[#52645A]">
           No actions logged yet. Configure an action above and click &ldquo;Record Action
           &amp; Update My Impact&rdquo; to track your verified progress.
         </p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
+            <caption className="sr-only">
+              Recorded sustainable actions and estimated environmental impact
+            </caption>
             <thead>
-              <tr className="border-b border-[#E1EAE4] text-xs text-[#66786E]">
-                <th className="py-2 pr-4 font-medium">Date</th>
-                <th className="py-2 pr-4 font-medium">Action</th>
-                <th className="py-2 pr-4 font-medium text-right">CO2 Avoided</th>
-                <th className="py-2 pr-4 font-medium text-right">Fuel / Energy</th>
-                <th className="py-2 pr-4 font-medium text-right">Trips</th>
-                <th className="py-2 font-medium text-right">Remove</th>
+              <tr className="border-b border-[#E1EAE4] text-xs text-[#52645A]">
+                <th scope="col" className="py-2 pr-4 font-medium">
+                  Date
+                </th>
+                <th scope="col" className="py-2 pr-4 font-medium">
+                  Action
+                </th>
+                <th scope="col" className="py-2 pr-4 font-medium text-right">
+                  CO2 Avoided
+                </th>
+                <th scope="col" className="py-2 pr-4 font-medium text-right">
+                  Fuel / Energy
+                </th>
+                <th scope="col" className="py-2 pr-4 font-medium text-right">
+                  Trips
+                </th>
+                <th scope="col" className="py-2 font-medium text-right">
+                  Remove
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E1EAE4]">
               {actions.map((item) => (
                 <tr key={item.id}>
-                  <td className="py-2.5 pr-4 text-xs font-mono tabular-nums text-[#66786E] whitespace-nowrap">
+                  <td className="py-2.5 pr-4 text-xs font-mono tabular-nums text-[#52645A] whitespace-nowrap">
                     {new Date(item.dateIso).toLocaleDateString()}
                   </td>
                   <td className="py-2.5 pr-4 text-[#20332B] font-medium">{item.label}</td>
@@ -61,7 +76,7 @@ export function ImpactActionsTable({ actions, onRemoveAction }: ImpactActionsTab
                       type="button"
                       onClick={() => onRemoveAction(item.id)}
                       aria-label={`Delete logged action ${item.label}`}
-                      className="text-[#66786E] hover:text-[#C94D53] p-1"
+                      className="text-[#52645A] hover:text-[#C94D53] p-1"
                     >
                       <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </button>

@@ -56,7 +56,7 @@ export const AqiStatusIndicator = memo(function AqiStatusIndicator({
       <span className="inline-flex items-center gap-1.5 text-sm font-medium text-[#20332B]">
         {renderIcon()}
         <span>{info.label}</span>
-        <span className="text-[#66786E] font-normal">· {info.riskLevel} risk</span>
+        <span className="text-[#52645A] font-normal">· {info.riskLevel} risk</span>
       </span>
     );
   }
@@ -65,7 +65,7 @@ export const AqiStatusIndicator = memo(function AqiStatusIndicator({
     <div className="flex flex-wrap items-center gap-2 text-sm">
       {renderIcon()}
       <span className="font-semibold text-[#20332B]">{info.label}</span>
-      <span aria-hidden="true" className="text-[#66786E]">
+      <span aria-hidden="true" className="text-[#52645A]">
         ·
       </span>
       <span className={`font-medium ${info.textClass}`}>{info.shortTier}</span>

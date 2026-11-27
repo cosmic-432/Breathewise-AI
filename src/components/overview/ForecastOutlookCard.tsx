@@ -46,7 +46,7 @@ export function ForecastOutlookCard({
           <h2 id="forecast-heading" className="text-base font-semibold text-[#20332B]">
             Next 18-Hour Air Quality Outlook
           </h2>
-          <p className="text-xs text-[#66786E] mt-0.5">
+          <p className="text-xs text-[#52645A] mt-0.5">
             Model-estimated hourly trajectory used to inform lower-exposure routine
             timing.
           </p>
@@ -63,18 +63,27 @@ export function ForecastOutlookCard({
       </div>
 
       {chartData.length === 0 ? (
-        <p className="text-sm text-[#66786E] py-6">
+        <p className="text-sm text-[#52645A] py-6">
           Hourly forecast series is not available from the active data provider for this
           location.
         </p>
       ) : showDataTable ? (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
+            <caption className="sr-only">
+              Next 18-hour air quality forecast for {locationName}
+            </caption>
             <thead>
-              <tr className="border-b border-[#E1EAE4] text-xs text-[#66786E]">
-                <th className="py-2 pr-4 font-medium">Hour</th>
-                <th className="py-2 pr-4 font-medium text-right">Forecast AQI</th>
-                <th className="py-2 font-medium text-right">PM2.5 (µg/m³)</th>
+              <tr className="border-b border-[#E1EAE4] text-xs text-[#52645A]">
+                <th scope="col" className="py-2 pr-4 font-medium">
+                  Hour
+                </th>
+                <th scope="col" className="py-2 pr-4 font-medium text-right">
+                  Forecast AQI
+                </th>
+                <th scope="col" className="py-2 font-medium text-right">
+                  PM2.5 (µg/m³)
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E1EAE4]">
@@ -84,7 +93,7 @@ export function ForecastOutlookCard({
                   <td className="py-2 pr-4 text-right font-mono tabular-nums text-[#20332B]">
                     {row.aqi ?? 'N/A'}
                   </td>
-                  <td className="py-2 text-right font-mono tabular-nums text-[#66786E]">
+                  <td className="py-2 text-right font-mono tabular-nums text-[#52645A]">
                     {row.pm25 ?? 'N/A'}
                   </td>
                 </tr>
@@ -100,7 +109,7 @@ export function ForecastOutlookCard({
         >
           <Suspense
             fallback={
-              <div className="h-full w-full rounded-lg bg-[#F5F8F6] flex items-center justify-center text-xs text-[#66786E]">
+              <div className="h-full w-full rounded-lg bg-[#F5F8F6] flex items-center justify-center text-xs text-[#52645A]">
                 Loading forecast chart...
               </div>
             }

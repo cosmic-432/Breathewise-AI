@@ -63,7 +63,7 @@ export function IndoorConditionsForm({ indoor, onChange }: IndoorConditionsFormP
         <h2 id="indoor-form-heading" className="text-base font-semibold text-[#20332B]">
           Your Home &amp; Room Conditions
         </h2>
-        <p className="text-xs text-[#66786E] mt-0.5">
+        <p className="text-xs text-[#52645A] mt-0.5">
           Changes save automatically and recalculate CADR and ventilation guidance
           immediately.
         </p>
@@ -84,7 +84,10 @@ export function IndoorConditionsForm({ indoor, onChange }: IndoorConditionsFormP
             max={400}
             value={indoor.roomSizeSqm}
             onChange={(e) =>
-              updateField('roomSizeSqm', Math.max(4, Number(e.target.value) || 4))
+              updateField(
+                'roomSizeSqm',
+                Math.max(4, Math.min(400, Number(e.target.value) || 4)),
+              )
             }
             className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm font-mono tabular-nums text-[#20332B]"
           />
@@ -104,7 +107,10 @@ export function IndoorConditionsForm({ indoor, onChange }: IndoorConditionsFormP
             max={20}
             value={indoor.occupants}
             onChange={(e) =>
-              updateField('occupants', Math.max(1, Number(e.target.value) || 1))
+              updateField(
+                'occupants',
+                Math.max(1, Math.min(20, Number(e.target.value) || 1)),
+              )
             }
             className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm font-mono tabular-nums text-[#20332B]"
           />
@@ -264,12 +270,16 @@ export function IndoorConditionsForm({ indoor, onChange }: IndoorConditionsFormP
             max={100}
             placeholder="Leave blank if unknown"
             value={indoor.indoorHumidityPercent ?? ''}
-            onChange={(e) =>
-              updateField(
-                'indoorHumidityPercent',
-                e.target.value === '' ? null : Number(e.target.value),
-              )
-            }
+            onChange={(e) => {
+              if (e.target.value === '') {
+                updateField('indoorHumidityPercent', null);
+                return;
+              }
+              const parsed = Number(e.target.value);
+              if (Number.isFinite(parsed)) {
+                updateField('indoorHumidityPercent', Math.max(5, Math.min(100, parsed)));
+              }
+            }}
             className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm font-mono tabular-nums text-[#20332B]"
           />
         </div>
@@ -288,12 +298,16 @@ export function IndoorConditionsForm({ indoor, onChange }: IndoorConditionsFormP
             max={2000}
             placeholder="Only if you own a sensor"
             value={indoor.measuredIndoorPm25 ?? ''}
-            onChange={(e) =>
-              updateField(
-                'measuredIndoorPm25',
-                e.target.value === '' ? null : Number(e.target.value),
-              )
-            }
+            onChange={(e) => {
+              if (e.target.value === '') {
+                updateField('measuredIndoorPm25', null);
+                return;
+              }
+              const parsed = Number(e.target.value);
+              if (Number.isFinite(parsed)) {
+                updateField('measuredIndoorPm25', Math.max(0, Math.min(2000, parsed)));
+              }
+            }}
             className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm font-mono tabular-nums text-[#20332B]"
           />
         </div>

@@ -119,7 +119,7 @@ export function ImpactCalculatorPage({ state }: ImpactCalculatorPageProps) {
         <h1 className="text-2xl font-bold tracking-tight text-[#20332B]">
           Environmental Impact Calculator
         </h1>
-        <p className="text-sm text-[#66786E] mt-1">
+        <p className="text-sm text-[#52645A] mt-1">
           Transparent, deterministic calculations showing your estimated CO2, fuel, trip,
           and electricity savings — with explicit assumptions and uncertainty.
         </p>

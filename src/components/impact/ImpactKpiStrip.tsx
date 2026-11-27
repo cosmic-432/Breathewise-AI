@@ -42,11 +42,11 @@ export function ImpactKpiStrip({ totals, actionCount }: ImpactKpiStripProps) {
             key={kpi.label}
             className="rounded-xl border border-[#E1EAE4] bg-white p-5"
           >
-            <p className="text-xs font-medium text-[#66786E]">{kpi.label}</p>
+            <p className="text-xs font-medium text-[#52645A]">{kpi.label}</p>
             <p className="text-2xl font-bold font-mono tabular-nums text-[#18543F] mt-1.5">
               {kpi.value}
             </p>
-            <p className="text-xs text-[#66786E] mt-1">{kpi.sub}</p>
+            <p className="text-xs text-[#52645A] mt-1">{kpi.sub}</p>
           </div>
         ))}
       </div>

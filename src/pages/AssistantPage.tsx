@@ -104,7 +104,7 @@ export function AssistantPage({ state, onOpenLocationModal }: AssistantPageProps
           <h1 className="text-2xl font-bold tracking-tight text-[#20332B]">
             BreatheWise AI Assistant
           </h1>
-          <p className="text-sm text-[#66786E] mt-1">
+          <p className="text-sm text-[#52645A] mt-1">
             Location-aware guidance grounded in your current air-quality data, household
             profile, and routines.
           </p>
@@ -123,7 +123,7 @@ export function AssistantPage({ state, onOpenLocationModal }: AssistantPageProps
             <button
               type="button"
               onClick={() => setChatTurns([])}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[#E1EAE4] bg-white px-3.5 py-2 text-xs font-medium text-[#66786E] hover:text-[#20332B] hover:bg-[#F5F8F6] transition-colors whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#E1EAE4] bg-white px-3.5 py-2 text-xs font-medium text-[#52645A] hover:text-[#20332B] hover:bg-[#F5F8F6] transition-colors whitespace-nowrap"
             >
               <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Clear Chat</span>
@@ -134,7 +134,7 @@ export function AssistantPage({ state, onOpenLocationModal }: AssistantPageProps
 
       {/* Live Grounding Context Strip */}
       <div className="rounded-xl border border-[#E1EAE4] bg-white px-5 py-3.5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#66786E]">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#52645A]">
           <span className="font-semibold text-[#20332B]">Grounded context:</span>
           <AqiStatusIndicator
             aqi={snapshot?.aqi}
@@ -150,7 +150,7 @@ export function AssistantPage({ state, onOpenLocationModal }: AssistantPageProps
           <span aria-hidden="true">·</span>
           <span>{routines.length} routine(s) saved</span>
         </div>
-        <span className="text-xs text-[#66786E]">
+        <span className="text-xs text-[#52645A]">
           Educational guidance only — not medical advice
         </span>
       </div>
@@ -167,7 +167,7 @@ export function AssistantPage({ state, onOpenLocationModal }: AssistantPageProps
                 <h2 className="text-base font-semibold text-[#20332B]">
                   Ask a question about today’s air quality
                 </h2>
-                <p className="text-sm text-[#66786E] mt-1 leading-relaxed">
+                <p className="text-sm text-[#52645A] mt-1 leading-relaxed">
                   BreatheWise AI reads your verified local air-quality snapshot and
                   household preferences, clearly separates data-backed guidance from
                   general advice, and never fabricates live numbers.
@@ -187,38 +187,44 @@ export function AssistantPage({ state, onOpenLocationModal }: AssistantPageProps
               </div>
             </div>
           ) : (
-            chatTurns.map((turn) => (
-              <div
-                key={turn.id}
-                className={
-                  turn.role === 'user'
-                    ? 'flex justify-end'
-                    : 'border-t border-[#E1EAE4] pt-5 first:border-t-0 first:pt-0'
-                }
-              >
-                {turn.role === 'user' ? (
-                  <div className="max-w-2xl rounded-xl bg-[#18543F] px-4 py-3 text-sm text-white leading-relaxed">
-                    {turn.text}
-                  </div>
-                ) : turn.error ? (
-                  <div
-                    role="alert"
-                    className="rounded-lg border border-[#C94D53]/40 bg-[#FBECEE] px-4 py-3 text-sm text-[#962D32]"
-                  >
-                    <p className="font-semibold">AI Request Error</p>
-                    <p className="mt-0.5">{turn.error}</p>
-                  </div>
-                ) : turn.structured ? (
-                  <StructuredAIResponseCard response={turn.structured} />
-                ) : (
-                  <p className="text-sm text-[#20332B]">{turn.text}</p>
-                )}
-              </div>
-            ))
+            <>
+              <h2 className="sr-only">Conversation</h2>
+              {chatTurns.map((turn) => (
+                <div
+                  key={turn.id}
+                  className={
+                    turn.role === 'user'
+                      ? 'flex justify-end'
+                      : 'border-t border-[#E1EAE4] pt-5 first:border-t-0 first:pt-0'
+                  }
+                >
+                  {turn.role === 'user' ? (
+                    <div className="max-w-2xl rounded-xl bg-[#18543F] px-4 py-3 text-sm text-white leading-relaxed">
+                      {turn.text}
+                    </div>
+                  ) : turn.error ? (
+                    <div
+                      role="alert"
+                      className="rounded-lg border border-[#C94D53]/40 bg-[#FBECEE] px-4 py-3 text-sm text-[#962D32]"
+                    >
+                      <p className="font-semibold">AI Request Error</p>
+                      <p className="mt-0.5">{turn.error}</p>
+                    </div>
+                  ) : turn.structured ? (
+                    <StructuredAIResponseCard response={turn.structured} />
+                  ) : (
+                    <p className="text-sm text-[#20332B]">{turn.text}</p>
+                  )}
+                </div>
+              ))}
+            </>
           )}
 
           {submitting && (
-            <div className="border-t border-[#E1EAE4] pt-5 flex items-center justify-between gap-4 text-sm text-[#66786E]">
+            <div
+              role="status"
+              className="border-t border-[#E1EAE4] pt-5 flex items-center justify-between gap-4 text-sm text-[#52645A]"
+            >
               <span>Analyzing verified local air quality and household context...</span>
               <button
                 type="button"
@@ -251,7 +257,7 @@ export function AssistantPage({ state, onOpenLocationModal }: AssistantPageProps
               onChange={(e) => setInput(e.target.value)}
               maxLength={1200}
               placeholder="Ask about commuting, elderly care, indoor ventilation, or lower-emission routines..."
-              className="flex-1 rounded-lg border border-[#E1EAE4] bg-white px-4 py-2.5 text-sm text-[#20332B] placeholder:text-[#66786E] focus:border-[#237A57] focus:ring-2 focus:ring-[#237A57]/25"
+              className="flex-1 rounded-lg border border-[#E1EAE4] bg-white px-4 py-2.5 text-sm text-[#20332B] placeholder:text-[#52645A] focus:border-[#237A57] focus:ring-2 focus:ring-[#237A57]/25"
             />
             <button
               type="submit"

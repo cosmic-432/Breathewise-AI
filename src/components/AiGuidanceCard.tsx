@@ -37,7 +37,7 @@ export function AiGuidanceCard({
             <button
               type="button"
               onClick={onDismiss}
-              className="text-xs text-[#66786E] hover:text-[#20332B]"
+              className="text-xs text-[#52645A] hover:text-[#20332B]"
             >
               Dismiss
             </button>

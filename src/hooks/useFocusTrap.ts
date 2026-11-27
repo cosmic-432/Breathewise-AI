@@ -26,6 +26,7 @@ export function useFocusTrap(
   containerRef: RefObject<HTMLElement | null>,
   isOpen: boolean,
   onEscape?: () => void,
+  initialFocusRef?: RefObject<HTMLElement | null>,
 ): void {
   const onEscapeRef = useRef(onEscape);
   useEffect(() => {
@@ -40,10 +41,15 @@ export function useFocusTrap(
 
     const container = containerRef.current;
     if (container) {
-      const first = Array.from(
-        container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
-      ).find(isElementVisible);
-      first?.focus();
+      const preferred = initialFocusRef?.current;
+      if (preferred && container.contains(preferred) && isElementVisible(preferred)) {
+        preferred.focus();
+      } else {
+        const first = Array.from(
+          container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+        ).find(isElementVisible);
+        first?.focus();
+      }
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -85,5 +91,5 @@ export function useFocusTrap(
       window.removeEventListener('keydown', handleKeyDown);
       previouslyFocused?.focus();
     };
-  }, [containerRef, isOpen]);
+  }, [containerRef, isOpen, initialFocusRef]);
 }

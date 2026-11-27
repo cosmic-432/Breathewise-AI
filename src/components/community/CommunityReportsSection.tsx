@@ -15,6 +15,7 @@ interface CommunityReportsSectionProps {
   reports: CommunityReport[];
   submittingReport: boolean;
   reportFeedback: string | null;
+  reportFeedbackIsError?: boolean;
   onSubmitReport: (payload: {
     areaLabel: string;
     category: CommunityReport['category'];
@@ -28,9 +29,11 @@ export function CommunityReportsSection({
   reports,
   submittingReport,
   reportFeedback,
+  reportFeedbackIsError = false,
   onSubmitReport,
 }: CommunityReportsSectionProps) {
-  const [areaLabel, setAreaLabel] = useState(defaultAreaLabel);
+  const [customAreaLabel, setCustomAreaLabel] = useState<string | null>(null);
+  const areaLabel = customAreaLabel ?? defaultAreaLabel;
   const [category, setCategory] = useState<CommunityReport['category']>('tip');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -59,7 +62,7 @@ export function CommunityReportsSection({
           <h2 id="share-tip-heading" className="text-base font-semibold text-[#20332B]">
             Share a Clean-Air Tip or Local Initiative
           </h2>
-          <p className="text-xs text-[#66786E] mt-0.5">
+          <p className="text-xs text-[#52645A] mt-0.5">
             Protect privacy: enter only a general city or district name — never share home
             street addresses or personal contact details.
           </p>
@@ -81,7 +84,7 @@ export function CommunityReportsSection({
                 minLength={2}
                 maxLength={60}
                 value={areaLabel}
-                onChange={(e) => setAreaLabel(e.target.value)}
+                onChange={(e) => setCustomAreaLabel(e.target.value)}
                 placeholder="e.g., South Delhi"
                 className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm text-[#20332B]"
               />
@@ -158,7 +161,16 @@ export function CommunityReportsSection({
             {submittingReport ? 'Publishing...' : 'Post to Community Feed'}
           </button>
 
-          {reportFeedback && <p className="text-xs text-[#237A57]">{reportFeedback}</p>}
+          {reportFeedback && (
+            <p
+              role={reportFeedbackIsError ? 'alert' : 'status'}
+              className={`text-xs ${
+                reportFeedbackIsError ? 'text-[#962D32]' : 'text-[#237A57]'
+              }`}
+            >
+              {reportFeedback}
+            </p>
+          )}
         </form>
       </section>
 
@@ -170,13 +182,13 @@ export function CommunityReportsSection({
           <h2 id="comm-feed-heading" className="text-base font-semibold text-[#20332B]">
             Community Tips &amp; Local Reports ({reports.length})
           </h2>
-          <span className="text-xs text-[#66786E]">
+          <span className="text-xs text-[#52645A]">
             User-submitted items are clearly marked unverified
           </span>
         </div>
 
         {reports.length === 0 ? (
-          <p className="text-sm text-[#66786E] py-4">
+          <p className="text-sm text-[#52645A] py-4">
             No community posts yet. Share the first clean-air tip or neighborhood
             initiative from the form on the left.
           </p>
@@ -184,7 +196,7 @@ export function CommunityReportsSection({
           <ul className="divide-y divide-[#E1EAE4]">
             {reports.map((rep) => (
               <li key={rep.id} className="py-4 first:pt-0 last:pb-0 space-y-1.5">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-[#66786E]">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-[#52645A]">
                   <span className="font-medium text-[#20332B]">{rep.areaLabel}</span>
                   <span aria-hidden="true">·</span>
                   <span className="capitalize">{rep.category}</span>
@@ -196,7 +208,7 @@ export function CommunityReportsSection({
                   </span>
                 </div>
                 <h3 className="text-sm font-semibold text-[#20332B]">{rep.title}</h3>
-                <p className="text-sm text-[#66786E] leading-relaxed">
+                <p className="text-sm text-[#52645A] leading-relaxed">
                   {rep.description}
                 </p>
               </li>

@@ -34,13 +34,13 @@ export function RoutineBlockSection({
         <h2 id={`block-${blockId}`} className="text-base font-semibold text-[#20332B]">
           {blockLabel}
         </h2>
-        <span className="text-xs font-mono tabular-nums text-[#66786E]">
+        <span className="text-xs font-mono tabular-nums text-[#52645A]">
           {blockHours} · {items.length} activity(s)
         </span>
       </div>
 
       {items.length === 0 ? (
-        <p className="text-sm text-[#66786E]">
+        <p className="text-sm text-[#52645A]">
           No activities scheduled for {blockLabel.toLowerCase()}.
         </p>
       ) : (
@@ -55,7 +55,7 @@ export function RoutineBlockSection({
                     <h3 className="text-base font-semibold text-[#20332B]">
                       {act.title}
                     </h3>
-                    <p className="text-xs text-[#66786E] mt-0.5">
+                    <p className="text-xs text-[#52645A] mt-0.5">
                       {ACTIVITY_LABELS[act.category]} ·{' '}
                       <span className="font-mono tabular-nums">
                         {act.durationMinutes} min
@@ -71,7 +71,7 @@ export function RoutineBlockSection({
                       type="button"
                       onClick={() => onEdit(act)}
                       aria-label={`Edit ${act.title}`}
-                      className="inline-flex items-center gap-1 text-xs text-[#66786E] hover:text-[#18543F] transition-colors"
+                      className="inline-flex items-center gap-1 text-xs text-[#52645A] hover:text-[#18543F] transition-colors"
                     >
                       <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
                       <span>Edit</span>
@@ -80,7 +80,7 @@ export function RoutineBlockSection({
                       type="button"
                       onClick={() => onRemove(act.id)}
                       aria-label={`Remove ${act.title}`}
-                      className="inline-flex items-center gap-1 text-xs text-[#66786E] hover:text-[#C94D53] transition-colors"
+                      className="inline-flex items-center gap-1 text-xs text-[#52645A] hover:text-[#C94D53] transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                       <span>Remove</span>
@@ -102,7 +102,7 @@ export function RoutineBlockSection({
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div>
-                    <h4 className="text-xs font-semibold text-[#66786E] mb-1.5">
+                    <h4 className="text-xs font-semibold text-[#52645A] mb-1.5">
                       Lower-Exposure Alternatives
                     </h4>
                     <ul className="list-disc pl-4 space-y-1 text-[#20332B]/90">
@@ -113,7 +113,7 @@ export function RoutineBlockSection({
                   </div>
 
                   <div>
-                    <h4 className="text-xs font-semibold text-[#66786E] mb-1.5">
+                    <h4 className="text-xs font-semibold text-[#52645A] mb-1.5">
                       Sustainable Transport Options
                     </h4>
                     {rec.sustainableTransportOptions.length > 0 ? (
@@ -123,14 +123,14 @@ export function RoutineBlockSection({
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-xs text-[#66786E]">
+                      <p className="text-xs text-[#52645A]">
                         Focus on exposure reduction for this activity today.
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <h4 className="text-xs font-semibold text-[#66786E] mb-1.5">
+                    <h4 className="text-xs font-semibold text-[#52645A] mb-1.5">
                       Practical Actions
                     </h4>
                     <ul className="list-disc pl-4 space-y-1 text-[#20332B]/90">
@@ -141,7 +141,7 @@ export function RoutineBlockSection({
                   </div>
                 </div>
 
-                <p className="text-xs text-[#66786E]">
+                <p className="text-xs text-[#52645A]">
                   <span className="font-medium text-[#20332B]">Why: </span>
                   {rec.reasoning}
                 </p>

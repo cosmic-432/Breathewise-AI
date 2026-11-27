@@ -14,11 +14,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { apiClient } from '../api/client.ts';
 import App from '../App.tsx';
 import { LocationSelectorModal } from '../components/LocationSelectorModal.tsx';
+import { CurrentAqiHeroCard } from '../components/overview/CurrentAqiHeroCard.tsx';
+import { ForecastOutlookCard } from '../components/overview/ForecastOutlookCard.tsx';
+import { useAiGuidance } from '../hooks/useAiGuidance.ts';
 import {
   useBreatheWiseState,
   type BreatheWiseState,
 } from '../hooks/useBreatheWiseState.ts';
-import { resetLocationPresetsCache } from '../hooks/useLocationPresets.ts';
+import {
+  resetLocationPresetsCache,
+  useLocationPresets,
+} from '../hooks/useLocationPresets.ts';
 import { OverviewPage } from '../pages/OverviewPage.tsx';
 import { PlannerPage } from '../pages/PlannerPage.tsx';
 import { SustainableChoicesPage } from '../pages/SustainableChoicesPage.tsx';
@@ -500,9 +506,261 @@ describe('React UI component, keyboard, focus, and accessibility behaviors', () 
     await user.click(refreshBtn);
     expect(refreshAirQuality).toHaveBeenCalledTimes(1);
 
-    // Toggle accessible data table
+    // Toggle accessible data table and verify caption + scope="col"
     await user.click(screen.getByRole('button', { name: /view accessible data table/i }));
-    expect(screen.getByRole('table')).toBeInTheDocument();
+    const forecastTable = screen.getByRole('table', {
+      name: /next 18-hour air quality forecast/i,
+    });
+    expect(forecastTable).toBeInTheDocument();
+    within(forecastTable)
+      .getAllByRole('columnheader')
+      .forEach((th) => expect(th).toHaveAttribute('scope', 'col'));
     expect(screen.getByText('240')).toBeInTheDocument();
+  });
+
+  it('LocationSelectorModal handles geolocation success, PERMISSION_DENIED, and unsupported browser states', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(apiClient, 'fetchPresets').mockResolvedValue([DEFAULT_LOCATION]);
+
+    const onSelect = vi.fn();
+    const onClose = vi.fn();
+    const originalGeolocation = Object.getOwnPropertyDescriptor(navigator, 'geolocation');
+
+    try {
+      // 1. Geolocation success
+      Object.defineProperty(navigator, 'geolocation', {
+        configurable: true,
+        value: {
+          getCurrentPosition: (success: PositionCallback) => {
+            success({
+              coords: { latitude: 12.9716, longitude: 77.5946 },
+            } as GeolocationPosition);
+          },
+        },
+      });
+
+      const { rerender } = render(
+        <LocationSelectorModal
+          isOpen={true}
+          currentLocation={DEFAULT_LOCATION}
+          onSelect={onSelect}
+          onClose={onClose}
+        />,
+      );
+
+      const presetBtn = await screen.findByRole('button', { name: /new delhi/i });
+      expect(presetBtn).toHaveAttribute('aria-pressed', 'true');
+
+      await user.click(
+        screen.getByRole('button', { name: /use device location \(optional\)/i }),
+      );
+      expect(onSelect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          latitude: 12.9716,
+          longitude: 77.5946,
+          source: 'geolocation',
+        }),
+      );
+      expect(onClose).toHaveBeenCalledTimes(1);
+
+      // 2. Geolocation PERMISSION_DENIED
+      Object.defineProperty(navigator, 'geolocation', {
+        configurable: true,
+        value: {
+          getCurrentPosition: (
+            _success: PositionCallback,
+            errorCb?: PositionErrorCallback,
+          ) => {
+            errorCb?.({
+              code: 1,
+              PERMISSION_DENIED: 1,
+              POSITION_UNAVAILABLE: 2,
+              TIMEOUT: 3,
+              message: 'User denied',
+            } as GeolocationPositionError);
+          },
+        },
+      });
+
+      rerender(
+        <LocationSelectorModal
+          isOpen={true}
+          currentLocation={DEFAULT_LOCATION}
+          onSelect={onSelect}
+          onClose={onClose}
+        />,
+      );
+      await user.click(
+        screen.getByRole('button', { name: /use device location \(optional\)/i }),
+      );
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        /location permission was declined/i,
+      );
+
+      // 3. Geolocation unsupported in browser
+      const navRecord = navigator as unknown as Record<string, unknown>;
+      delete navRecord.geolocation;
+      await user.click(
+        screen.getByRole('button', { name: /use device location \(optional\)/i }),
+      );
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        /device geolocation is not supported/i,
+      );
+    } finally {
+      if (originalGeolocation) {
+        Object.defineProperty(navigator, 'geolocation', originalGeolocation);
+      }
+    }
+  });
+
+  it('useLocationPresets surfaces fetch failure cleanly as an error string', async () => {
+    vi.spyOn(apiClient, 'fetchPresets').mockRejectedValueOnce(
+      new Error('Presets endpoint offline'),
+    );
+
+    const { result } = renderHook(() => useLocationPresets(true));
+    await waitFor(() => {
+      expect(result.current.error).toBe('Presets endpoint offline');
+    });
+    expect(result.current.presets).toEqual([]);
+  });
+
+  it('useBreatheWiseState suppresses AbortError when a rapid location change cancels an in-flight fetch', async () => {
+    const fetchSpy = vi
+      .spyOn(apiClient, 'fetchAirQuality')
+      .mockImplementationOnce((_loc, opts) => {
+        return new Promise((_resolve, reject) => {
+          opts?.signal?.addEventListener('abort', () => {
+            reject(new DOMException('Aborted', 'AbortError'));
+          });
+        });
+      })
+      .mockResolvedValueOnce({ ...SAMPLE_SNAPSHOT, location: PRESET_BENGALURU, aqi: 74 });
+
+    const { result } = renderHook(() => useBreatheWiseState());
+
+    act(() => {
+      result.current.setLocation(PRESET_BENGALURU);
+    });
+
+    await waitFor(() => {
+      expect(result.current.loadingAqi).toBe(false);
+    });
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    expect(result.current.snapshot?.aqi).toBe(74);
+    expect(result.current.aqiError).toBeNull();
+  });
+
+  it('useAiGuidance handles loading, success, dismiss, error, and aborts in-flight requests on unmount', async () => {
+    const abortedSignals: boolean[] = [];
+    vi.spyOn(apiClient, 'askAssistant')
+      .mockResolvedValueOnce({
+        summary: 'Safe afternoon window.',
+        air_quality_context: {
+          location: 'New Delhi',
+          aqi_value: 245,
+          aqi_category: 'Poor',
+          data_status: 'Estimated',
+          data_source: 'Open-Meteo',
+          last_updated: '2026-11-26T09:00:00Z',
+        },
+        recommendations: [],
+        indoor_actions: [],
+        outdoor_actions: [],
+        sustainable_alternatives: [],
+        impact_explanation: [],
+        limitations: [],
+        sources: [],
+      })
+      .mockRejectedValueOnce(new Error('AI gateway timeout'))
+      .mockImplementationOnce((_payload, signal) => {
+        return new Promise((_resolve, reject) => {
+          signal?.addEventListener('abort', () => {
+            abortedSignals.push(true);
+            reject(new DOMException('Aborted', 'AbortError'));
+          });
+        });
+      });
+
+    const { result, unmount } = renderHook(() => useAiGuidance());
+
+    await act(async () => {
+      await result.current.requestGuidance(
+        { question: 'Test question?', mode: 'routine', snapshot: SAMPLE_SNAPSHOT },
+        'Fallback error',
+      );
+    });
+    expect(result.current.response?.summary).toBe('Safe afternoon window.');
+    expect(result.current.error).toBeNull();
+
+    act(() => {
+      result.current.dismiss();
+    });
+    expect(result.current.response).toBeNull();
+
+    await act(async () => {
+      await result.current.requestGuidance(
+        { question: 'Failing question?', mode: 'routine', snapshot: SAMPLE_SNAPSHOT },
+        'Fallback error',
+      );
+    });
+    expect(result.current.error).toBe('AI gateway timeout');
+
+    // Start an in-flight request and unmount to verify AbortController cleanup
+    act(() => {
+      void result.current.requestGuidance(
+        { question: 'Pending unmount?', mode: 'routine', snapshot: SAMPLE_SNAPSHOT },
+        'Fallback error',
+      );
+    });
+    unmount();
+    expect(abortedSignals).toEqual([true]);
+  });
+
+  it('CurrentAqiHeroCard uses accessible WCAG AA text classes for Moderate and Sensitive AQI numerals', () => {
+    const { rerender } = render(
+      <CurrentAqiHeroCard
+        snapshot={{ ...SAMPLE_SNAPSHOT, aqi: 75, aqiScale: 'US_EPA' }}
+        loading={false}
+        location={DEFAULT_LOCATION}
+        useImperial={false}
+        onNavigate={vi.fn()}
+      />,
+    );
+    const moderateNumeral = screen.getByText('75');
+    expect(moderateNumeral).toHaveClass('text-[#255A7D]');
+    expect(moderateNumeral.style.color).toBe('');
+
+    rerender(
+      <CurrentAqiHeroCard
+        snapshot={{ ...SAMPLE_SNAPSHOT, aqi: 135, aqiScale: 'US_EPA' }}
+        loading={false}
+        location={DEFAULT_LOCATION}
+        useImperial={false}
+        onNavigate={vi.fn()}
+      />,
+    );
+    const sensitiveNumeral = screen.getByText('135');
+    expect(sensitiveNumeral).toHaveClass('text-[#8F5818]');
+    expect(sensitiveNumeral.style.color).toBe('');
+  });
+
+  it('ForecastOutlookCard resolves the lazy-loaded ForecastAreaChart cleanly without errors', async () => {
+    render(
+      <ForecastOutlookCard
+        locationName="New Delhi"
+        hourlyForecast={SAMPLE_SNAPSHOT.hourlyForecast}
+      />,
+    );
+
+    const chartRegion = screen.getByRole('img', {
+      name: /hourly aqi forecast for new delhi, ranging from 215 to 240/i,
+    });
+    expect(chartRegion).toBeInTheDocument();
+
+    // Wait for lazy ForecastAreaChart chunk to finish loading and replace fallback text
+    await waitFor(() => {
+      expect(screen.queryByText(/loading forecast chart/i)).not.toBeInTheDocument();
+    });
   });
 });

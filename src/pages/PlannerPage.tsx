@@ -1,6 +1,5 @@
 import type { FormEvent } from 'react';
 import { useMemo, useState } from 'react';
-import { apiClient } from '../api/client.ts';
 import { AqiStatusIndicator } from '../components/AqiStatusBadge.tsx';
 import {
   TIME_BLOCKS,
@@ -9,12 +8,12 @@ import {
 import { RoutineActivityForm } from '../components/planner/RoutineActivityForm.tsx';
 import { RoutineBlockSection } from '../components/planner/RoutineBlockSection.tsx';
 import { AiGuidanceCard } from '../components/AiGuidanceCard.tsx';
+import { useAiGuidance } from '../hooks/useAiGuidance.ts';
 import type { BreatheWiseState } from '../hooks/useBreatheWiseState.ts';
 import type {
   ActivityCategory,
   RoutineActivity,
   RoutineRecommendation,
-  StructuredAIResponse,
   TimeBlock,
 } from '../types/index.ts';
 import { createEntityId } from '../utils/id.ts';
@@ -37,9 +36,7 @@ export function PlannerPage({ state }: PlannerPageProps) {
     useState<TransportMode>('public_transit');
   const [formError, setFormError] = useState<string | null>(null);
 
-  const [aiPlan, setAiPlan] = useState<StructuredAIResponse | null>(null);
-  const [loadingAi, setLoadingAi] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
+  const aiPlan = useAiGuidance();
 
   const recommendationsById = useMemo(() => {
     const map = new Map<string, RoutineRecommendation>();
@@ -104,27 +101,18 @@ export function PlannerPage({ state }: PlannerPageProps) {
     setRoutines(routines.filter((r) => r.id !== id));
   };
 
-  const handleAskAiReview = async () => {
-    setLoadingAi(true);
-    setAiError(null);
-    try {
-      const result = await apiClient.askAssistant({
+  const handleAskAiReview = () =>
+    aiPlan.requestGuidance(
+      {
         question:
           'Review my saved daily routine for today across morning, afternoon, evening, and night based on our local air quality and household profile. Highlight when reducing outdoor exposure matters more than active-transport emissions.',
         mode: 'routine',
         snapshot,
         household,
         routines,
-      });
-      setAiPlan(result);
-    } catch (err) {
-      setAiError(
-        err instanceof Error ? err.message : 'Unable to generate AI routine review.',
-      );
-    } finally {
-      setLoadingAi(false);
-    }
-  };
+      },
+      'Unable to generate AI routine review.',
+    );
 
   return (
     <div className="space-y-6">
@@ -133,7 +121,7 @@ export function PlannerPage({ state }: PlannerPageProps) {
           <h1 className="text-2xl font-bold tracking-tight text-[#20332B]">
             Smart Daily Routine Planner
           </h1>
-          <p className="text-sm text-[#66786E] mt-1">
+          <p className="text-sm text-[#52645A] mt-1">
             Adapts commutes, workouts, errands, and family plans to real-time air quality
             and forecast windows.
           </p>
@@ -141,14 +129,16 @@ export function PlannerPage({ state }: PlannerPageProps) {
         <button
           type="button"
           onClick={() => void handleAskAiReview()}
-          disabled={loadingAi || routines.length === 0}
+          disabled={aiPlan.loading || routines.length === 0}
           className="inline-flex items-center justify-center rounded-lg bg-[#237A57] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#18543F] disabled:opacity-50 transition-colors whitespace-nowrap shrink-0"
         >
-          {loadingAi ? 'Reviewing Routine with AI...' : 'Optimize Day with Gemini AI'}
+          {aiPlan.loading
+            ? 'Reviewing Routine with AI...'
+            : 'Optimize Day with Gemini AI'}
         </button>
       </div>
 
-      <div className="rounded-xl border border-[#E1EAE4] bg-white px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 text-xs text-[#66786E]">
+      <div className="rounded-xl border border-[#E1EAE4] bg-white px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 text-xs text-[#52645A]">
         <div className="flex flex-wrap items-center gap-2.5">
           <AqiStatusIndicator
             aqi={snapshot?.aqi}
@@ -188,9 +178,9 @@ export function PlannerPage({ state }: PlannerPageProps) {
       <AiGuidanceCard
         title="Gemini AI Personalized Routine Review"
         ariaLabel="Gemini personalized daily plan"
-        response={aiPlan}
-        error={aiError}
-        onDismiss={() => setAiPlan(null)}
+        response={aiPlan.response}
+        error={aiPlan.error}
+        onDismiss={aiPlan.dismiss}
       />
 
       <div className="space-y-5">

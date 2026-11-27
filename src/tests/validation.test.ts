@@ -11,6 +11,11 @@ import { createRateLimiter } from '../server/rateLimiter.ts';
 import { AirQualityService } from '../services/providers/airQualityProvider.ts';
 import { formatSafeErrorReason } from '../services/providers/httpClient.ts';
 import {
+  OpenMeteoAirQualityProvider,
+  computeShortTermTrend,
+} from '../services/providers/openMeteoProvider.ts';
+import { WaqiStationProvider } from '../services/providers/waqiProvider.ts';
+import {
   DEFAULT_CHECKLIST,
   DEFAULT_HOUSEHOLD,
   DEFAULT_INDOOR,
@@ -670,5 +675,157 @@ describe('Runtime validation across localStorage, API responses, and external pr
       description: 'Use neighborhood leaf composting bins instead of burning.',
     });
     expect(posted.report.id).toBe('rep-1');
+  });
+
+  it('covers OpenMeteoAirQualityProvider trend branches and India US_EPA fallback when PM2.5 is null', async () => {
+    const mkPoint = (offsetHours: number, aqi: number | null) => ({
+      time: new Date(Date.now() + offsetHours * 3600_000).toISOString(),
+      aqi,
+      pm25: aqi !== null ? 40 : null,
+      pm10: aqi !== null ? 70 : null,
+      status: aqi !== null ? ('estimated' as const) : ('unavailable' as const),
+    });
+
+    // Worsening (+20), stable (+2), unavailable (short array & all-null upcoming)
+    expect(
+      computeShortTermTrend(100, [
+        mkPoint(0, 100),
+        mkPoint(1, 120),
+        mkPoint(2, 122),
+        mkPoint(3, 125),
+      ]).trend,
+    ).toBe('worsening');
+
+    expect(
+      computeShortTermTrend(100, [
+        mkPoint(0, 100),
+        mkPoint(1, 102),
+        mkPoint(2, 101),
+        mkPoint(3, 103),
+      ]).trend,
+    ).toBe('stable');
+
+    expect(computeShortTermTrend(100, [mkPoint(0, 100), mkPoint(1, 105)]).trend).toBe(
+      'unavailable',
+    );
+    expect(
+      computeShortTermTrend(100, [
+        mkPoint(0, 100),
+        mkPoint(1, null),
+        mkPoint(2, null),
+        mkPoint(3, null),
+      ]).trend,
+    ).toBe('unavailable');
+
+    // India location with pm2_5 = null falls back to US_EPA scale with explanatory notice
+    const provider = new OpenMeteoAirQualityProvider();
+    const nowIso = new Date().toISOString();
+    const snapshot = await provider.fetchAirQuality(DEFAULT_LOCATION, async (url) => {
+      const href = String(url);
+      if (href.includes('air-quality-api.open-meteo.com')) {
+        return new Response(
+          JSON.stringify({
+            current: {
+              time: nowIso,
+              us_aqi: 128,
+              pm2_5: null,
+              pm10: 95,
+              nitrogen_dioxide: 24,
+              sulphur_dioxide: 8,
+              carbon_monoxide: 450,
+              ozone: 52,
+            },
+            hourly: {
+              time: [nowIso],
+              us_aqi: [128],
+              pm2_5: [null],
+              pm10: [95],
+            },
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response(
+        JSON.stringify({
+          current: {
+            time: nowIso,
+            temperature_2m: 22.4,
+            relative_humidity_2m: 48,
+            wind_speed_10m: 7.2,
+          },
+        }),
+        { status: 200 },
+      );
+    });
+
+    expect(snapshot.aqiScale).toBe('US_EPA');
+    expect(snapshot.aqi).toBe(128);
+    expect(snapshot.notice).toContain('US EPA AQI');
+    expect(snapshot.dominantPollutant).toBe('PM10');
+  });
+
+  it('covers WaqiStationProvider HTTP error, string AQI parsing, and missing iaqi/attributions fallbacks', async () => {
+    const provider = new WaqiStationProvider('demo-token');
+    expect(provider.supportsLocation()).toBe(true);
+    expect(new WaqiStationProvider('   ').supportsLocation()).toBe(false);
+
+    // 1. Non-200 HTTP throws clear error
+    await expect(
+      provider.fetchAirQuality(DEFAULT_LOCATION, async (url) => {
+        if (String(url).includes('api.waqi.info')) {
+          return new Response('Upstream error', { status: 503 });
+        }
+        return new Response(JSON.stringify({ current: { temperature_2m: 20 } }), {
+          status: 200,
+        });
+      }),
+    ).rejects.toThrow(/WAQI responded with HTTP 503/);
+
+    // 2. String numeric AQI parses to measured number; missing iaqi & attributions degrade cleanly
+    const parsedSnap = await provider.fetchAirQuality(DEFAULT_LOCATION, async (url) => {
+      if (String(url).includes('api.waqi.info')) {
+        return new Response(
+          JSON.stringify({
+            status: 'ok',
+            data: {
+              aqi: '142',
+              dominentpol: 'pm25',
+              city: { name: 'CPCB Station A' },
+              time: { iso: new Date().toISOString() },
+            },
+          }),
+          { status: 200 },
+        );
+      }
+      return new Response('Weather down', { status: 500 });
+    });
+
+    expect(parsedSnap.aqi).toBe(142);
+    expect(parsedSnap.aqiStatus).toBe('measured');
+    expect(parsedSnap.dominantPollutant).toBe('PM25');
+    expect(parsedSnap.dataSource).toBe(provider.name);
+    expect(parsedSnap.pollutants.every((p) => p.status === 'unavailable')).toBe(true);
+    expect(parsedSnap.weather.status).toBe('unavailable');
+
+    // 3. Non-numeric string AQI "-" maps to null/unavailable
+    const nonNumericSnap = await provider.fetchAirQuality(
+      DEFAULT_LOCATION,
+      async (url) => {
+        if (String(url).includes('api.waqi.info')) {
+          return new Response(
+            JSON.stringify({
+              status: 'ok',
+              data: { aqi: '-', time: { iso: new Date().toISOString() } },
+            }),
+            { status: 200 },
+          );
+        }
+        return new Response(JSON.stringify({ current: { temperature_2m: 20 } }), {
+          status: 200,
+        });
+      },
+    );
+    expect(nonNumericSnap.aqi).toBeNull();
+    expect(nonNumericSnap.aqiStatus).toBe('unavailable');
   });
 });

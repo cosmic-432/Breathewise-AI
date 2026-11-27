@@ -82,7 +82,7 @@ export function SidebarNav({ activeSection, onNavigate }: SidebarNavProps) {
               className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
                 isActive
                   ? 'bg-[#DDF1E6] text-[#18543F]'
-                  : 'text-[#66786E] hover:bg-[#F5F8F6] hover:text-[#20332B]'
+                  : 'text-[#52645A] hover:bg-[#F5F8F6] hover:text-[#20332B]'
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
@@ -92,7 +92,7 @@ export function SidebarNav({ activeSection, onNavigate }: SidebarNavProps) {
         })}
       </nav>
 
-      <div className="border-t border-[#E1EAE4] px-5 py-3.5 text-xs text-[#66786E]">
+      <div className="border-t border-[#E1EAE4] px-5 py-3.5 text-xs text-[#52645A]">
         Breathe smarter. Live healthier.
       </div>
     </div>

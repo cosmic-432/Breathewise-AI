@@ -1,14 +1,10 @@
 import type { KeyboardEvent } from 'react';
 import { useRef, useState } from 'react';
 import { AlertTriangle, ArrowRight } from 'lucide-react';
-import { apiClient } from '../api/client.ts';
 import { AiGuidanceCard } from '../components/AiGuidanceCard.tsx';
+import { useAiGuidance } from '../hooks/useAiGuidance.ts';
 import type { BreatheWiseState } from '../hooks/useBreatheWiseState.ts';
-import type {
-  NavSection,
-  StructuredAIResponse,
-  SustainableAlternativeItem,
-} from '../types/index.ts';
+import type { NavSection, SustainableAlternativeItem } from '../types/index.ts';
 import { interpretAqi } from '../utils/aqi.ts';
 import { SUSTAINABLE_ALTERNATIVES_CATALOG } from '../utils/sustainableCatalog.ts';
 
@@ -53,9 +49,7 @@ export function SustainableChoicesPage({
       tabRefs.current[nextIndex]?.focus();
     }
   };
-  const [aiIdeas, setAiIdeas] = useState<StructuredAIResponse | null>(null);
-  const [loadingAi, setLoadingAi] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
+  const aiIdeas = useAiGuidance();
 
   const aqiInfo = interpretAqi(snapshot?.aqi, snapshot?.aqiScale ?? 'US_EPA');
   const outdoorUnsafe = !aqiInfo.outdoorExerciseSafe;
@@ -65,28 +59,17 @@ export function SustainableChoicesPage({
       ? SUSTAINABLE_ALTERNATIVES_CATALOG
       : SUSTAINABLE_ALTERNATIVES_CATALOG.filter((item) => item.category === filter);
 
-  const handleAskAiAlternatives = async () => {
-    setLoadingAi(true);
-    setAiError(null);
-    try {
-      const result = await apiClient.askAssistant({
+  const handleAskAiAlternatives = () =>
+    aiIdeas.requestGuidance(
+      {
         question:
           'Recommend practical lower-emission transportation, household, and neighborhood choices tailored to my household profile and today’s air quality. Clearly note trade-offs and avoid recommending outdoor cycling or walking if air quality is poor.',
         mode: 'sustainable',
         snapshot,
         household,
-      });
-      setAiIdeas(result);
-    } catch (err) {
-      setAiError(
-        err instanceof Error
-          ? err.message
-          : 'Unable to generate sustainable recommendations.',
-      );
-    } finally {
-      setLoadingAi(false);
-    }
-  };
+      },
+      'Unable to generate sustainable recommendations.',
+    );
 
   return (
     <div className="space-y-6">
@@ -95,7 +78,7 @@ export function SustainableChoicesPage({
           <h1 className="text-2xl font-bold tracking-tight text-[#20332B]">
             Sustainable Choices
           </h1>
-          <p className="text-sm text-[#66786E] mt-1">
+          <p className="text-sm text-[#52645A] mt-1">
             Practical, lower-emission alternatives with transparent trade-offs and
             exposure-safe timing.
           </p>
@@ -104,10 +87,10 @@ export function SustainableChoicesPage({
         <button
           type="button"
           onClick={() => void handleAskAiAlternatives()}
-          disabled={loadingAi}
+          disabled={aiIdeas.loading}
           className="inline-flex items-center justify-center rounded-lg bg-[#237A57] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#18543F] disabled:opacity-50 transition-colors whitespace-nowrap shrink-0"
         >
-          {loadingAi ? 'Personalizing with AI...' : 'Personalize Swaps with Gemini'}
+          {aiIdeas.loading ? 'Personalizing with AI...' : 'Personalize Swaps with Gemini'}
         </button>
       </div>
 
@@ -137,7 +120,7 @@ export function SustainableChoicesPage({
                 className={`rounded-md px-3.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
                   isSelected
                     ? 'bg-white text-[#18543F] shadow-xs'
-                    : 'text-[#66786E] hover:text-[#20332B]'
+                    : 'text-[#52645A] hover:text-[#20332B]'
                 }`}
               >
                 {tab.label}
@@ -146,7 +129,7 @@ export function SustainableChoicesPage({
           })}
         </div>
 
-        <p className="text-xs text-[#66786E] max-w-md">
+        <p className="text-xs text-[#52645A] max-w-md">
           Individual choices reduce personal emissions and local smoke plumes, but
           citywide smog also requires collective action, clean transit, and policy
           measures.
@@ -155,9 +138,9 @@ export function SustainableChoicesPage({
 
       <AiGuidanceCard
         title="Gemini Personalized Sustainable Recommendations"
-        response={aiIdeas}
-        error={aiError}
-        onDismiss={() => setAiIdeas(null)}
+        response={aiIdeas.response}
+        error={aiIdeas.error}
+        onDismiss={aiIdeas.dismiss}
       />
 
       {/* Alternatives List */}
@@ -205,7 +188,7 @@ export function SustainableChoicesPage({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm border-t border-[#E1EAE4] pt-4">
               <div>
-                <h3 className="text-xs font-semibold text-[#66786E]">1. Current habit</h3>
+                <h3 className="text-xs font-semibold text-[#52645A]">1. Current habit</h3>
                 <p className="mt-1 text-[#20332B]">{item.currentHabit}</p>
               </div>
               <div>
@@ -215,7 +198,7 @@ export function SustainableChoicesPage({
                 <p className="mt-1 text-[#20332B]">{item.suggestedAlternative}</p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold text-[#66786E]">
+                <h3 className="text-xs font-semibold text-[#52645A]">
                   3. Why it matters
                 </h3>
                 <p className="mt-1 text-[#20332B]/90 leading-relaxed">
@@ -223,7 +206,7 @@ export function SustainableChoicesPage({
                 </p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold text-[#66786E]">
+                <h3 className="text-xs font-semibold text-[#52645A]">
                   4. Practical implementation
                 </h3>
                 <ul className="mt-1 list-disc pl-4 space-y-1 text-[#20332B]/90">
@@ -241,10 +224,10 @@ export function SustainableChoicesPage({
                 </p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold text-[#66786E]">
+                <h3 className="text-xs font-semibold text-[#52645A]">
                   6. Trade-offs &amp; limitations
                 </h3>
-                <p className="mt-1 text-[#66786E] leading-relaxed">
+                <p className="mt-1 text-[#52645A] leading-relaxed">
                   {item.tradeOffsAndLimitations}
                 </p>
               </div>

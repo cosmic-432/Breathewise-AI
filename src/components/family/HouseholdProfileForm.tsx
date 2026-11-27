@@ -79,7 +79,7 @@ export function HouseholdProfileForm({ household, onChange }: HouseholdProfileFo
         >
           Household Profile
         </h2>
-        <p className="text-xs text-[#66786E] mt-0.5">
+        <p className="text-xs text-[#52645A] mt-0.5">
           Stored only in your browser. No names, birth dates, addresses, or medical
           records are collected.
         </p>

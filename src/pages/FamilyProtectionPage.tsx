@@ -1,10 +1,8 @@
-import { useState } from 'react';
-import { apiClient } from '../api/client.ts';
 import { AiGuidanceCard } from '../components/AiGuidanceCard.tsx';
 import { FamilyChecklistSection } from '../components/family/FamilyChecklistSection.tsx';
 import { HouseholdProfileForm } from '../components/family/HouseholdProfileForm.tsx';
+import { useAiGuidance } from '../hooks/useAiGuidance.ts';
 import type { BreatheWiseState } from '../hooks/useBreatheWiseState.ts';
-import type { StructuredAIResponse } from '../types/index.ts';
 import { interpretAqi } from '../utils/aqi.ts';
 
 interface FamilyProtectionPageProps {
@@ -13,33 +11,22 @@ interface FamilyProtectionPageProps {
 
 export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
   const { household, setHousehold, checklist, setChecklist, snapshot } = state;
-  const [aiBrief, setAiBrief] = useState<StructuredAIResponse | null>(null);
-  const [loadingAi, setLoadingAi] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
+  const aiBrief = useAiGuidance();
 
   const aqiInfo = interpretAqi(snapshot?.aqi, snapshot?.aqiScale ?? 'US_EPA');
   const isPolluted = !aqiInfo.outdoorExerciseSafe;
 
-  const handleAskFamilyBrief = async () => {
-    setLoadingAi(true);
-    setAiError(null);
-    try {
-      const response = await apiClient.askAssistant({
+  const handleAskFamilyBrief = () =>
+    aiBrief.requestGuidance(
+      {
         question:
           'Generate a practical, non-diagnostic family air-quality protection plan for today tailored to our household age groups, commute patterns, and selected sensitivity considerations.',
         mode: 'family',
         snapshot,
         household,
-      });
-      setAiBrief(response);
-    } catch (err) {
-      setAiError(
-        err instanceof Error ? err.message : 'Unable to generate family guidance.',
-      );
-    } finally {
-      setLoadingAi(false);
-    }
-  };
+      },
+      'Unable to generate family guidance.',
+    );
 
   return (
     <div className="space-y-6">
@@ -48,7 +35,7 @@ export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
           <h1 className="text-2xl font-bold tracking-tight text-[#20332B]">
             Family Protection Mode
           </h1>
-          <p className="text-sm text-[#66786E] mt-1">
+          <p className="text-sm text-[#52645A] mt-1">
             Practical household exposure-reduction planning for children, older adults,
             sensitive members, and outdoor workers.
           </p>
@@ -56,10 +43,10 @@ export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
         <button
           type="button"
           onClick={() => void handleAskFamilyBrief()}
-          disabled={loadingAi}
+          disabled={aiBrief.loading}
           className="inline-flex items-center justify-center rounded-lg bg-[#237A57] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#18543F] disabled:opacity-50 transition-colors whitespace-nowrap shrink-0"
         >
-          {loadingAi ? 'Generating Family Brief...' : 'Generate AI Family Brief'}
+          {aiBrief.loading ? 'Generating Family Brief...' : 'Generate AI Family Brief'}
         </button>
       </div>
 
@@ -70,9 +57,9 @@ export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
         <div className="lg:col-span-7 space-y-5">
           <AiGuidanceCard
             title="Gemini Family Protection Brief"
-            response={aiBrief}
-            error={aiError}
-            onDismiss={() => setAiBrief(null)}
+            response={aiBrief.response}
+            error={aiBrief.error}
+            onDismiss={aiBrief.dismiss}
           />
 
           {/* Special Consideration Guidance Cards */}
@@ -87,7 +74,7 @@ export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
               >
                 Tailored Exposure-Reduction Considerations
               </h2>
-              <span className="text-xs text-[#66786E]">
+              <span className="text-xs text-[#52645A]">
                 Current AQI: {snapshot?.aqi ?? 'Unavailable'} ({aqiInfo.label})
               </span>
             </div>
@@ -95,7 +82,7 @@ export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] p-4 space-y-1.5">
                 <h3 className="text-sm font-semibold text-[#20332B]">Children</h3>
-                <p className="text-xs text-[#66786E] leading-relaxed">
+                <p className="text-xs text-[#52645A] leading-relaxed">
                   {isPolluted
                     ? 'Developing lungs breathe faster relative to body weight. Shift active sports indoors today, limit roadside waiting at school gates, and ensure indoor play spaces stay smoke-free.'
                     : 'Current air quality allows normal outdoor play; prefer parks set back from congested roads and recheck AQI before evening.'}
@@ -106,7 +93,7 @@ export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
                 <h3 className="text-sm font-semibold text-[#20332B]">
                   Older Adults (65+)
                 </h3>
-                <p className="text-xs text-[#66786E] leading-relaxed">
+                <p className="text-xs text-[#52645A] leading-relaxed">
                   {isPolluted
                     ? 'Avoid early-morning outdoor walks during winter smog inversions. Keep indoor rooms comfortably filtered, have others handle errands, and seek prompt medical advice if shortness of breath or chest discomfort occurs.'
                     : 'Light outdoor walks are reasonable under current readings; carry prescribed medications and check afternoon/evening trends.'}
@@ -117,7 +104,7 @@ export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
                 <h3 className="text-sm font-semibold text-[#20332B]">
                   Respiratory &amp; Cardiovascular Sensitivities
                 </h3>
-                <p className="text-xs text-[#66786E] leading-relaxed">
+                <p className="text-xs text-[#52645A] leading-relaxed">
                   Follow your clinician’s existing action plan and keep prescribed
                   reliever medications accessible. Reduce exertion during elevated
                   PM2.5/O3 and seek medical care promptly for worsening symptoms.
@@ -126,7 +113,7 @@ export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
 
               <div className="rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] p-4 space-y-1.5">
                 <h3 className="text-sm font-semibold text-[#20332B]">Outdoor Workers</h3>
-                <p className="text-xs text-[#66786E] leading-relaxed">
+                <p className="text-xs text-[#52645A] leading-relaxed">
                   {isPolluted
                     ? 'Use a well-fitted N95/FFP2 respirator during high-particulate shifts, schedule indoor recovery breaks, stay hydrated, and shift heavy manual work away from peak traffic hours where feasible.'
                     : 'Keep particulate protection available if localized dust, road work, or smoke appears on-site.'}
@@ -134,7 +121,7 @@ export function FamilyProtectionPage({ state }: FamilyProtectionPageProps) {
               </div>
             </div>
 
-            <p className="text-xs text-[#66786E]">
+            <p className="text-xs text-[#52645A]">
               Note: BreatheWise AI provides general exposure-reduction education and does
               not diagnose or predict medical conditions.
             </p>

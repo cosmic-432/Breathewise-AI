@@ -83,11 +83,18 @@ export function MapPage({ state, onOpenLocationModal }: MapPageProps) {
       opacity: 1,
       fillOpacity: 0.85,
     });
-    activeMarker.bindPopup(
-      `<strong>${location.name}</strong><br/>AQI: ${
-        snapshot?.aqi ?? 'Unavailable'
-      } (${interpretAqi(snapshot?.aqi, snapshot?.aqiScale ?? 'US_EPA').label})`,
+    const aqiInterpretation = interpretAqi(snapshot?.aqi, snapshot?.aqiScale ?? 'US_EPA');
+    const popupContent = document.createElement('div');
+    const titleEl = document.createElement('strong');
+    titleEl.textContent = location.name;
+    popupContent.appendChild(titleEl);
+    popupContent.appendChild(document.createElement('br'));
+    popupContent.appendChild(
+      document.createTextNode(
+        `AQI: ${snapshot?.aqi ?? 'Unavailable'} (${aqiInterpretation.label})`,
+      ),
     );
+    activeMarker.bindPopup(popupContent);
     activeMarker.addTo(layer);
 
     // Preset reference city markers
@@ -114,7 +121,7 @@ export function MapPage({ state, onOpenLocationModal }: MapPageProps) {
           <h1 className="text-2xl font-bold tracking-tight text-[#20332B]">
             Air Quality Map
           </h1>
-          <p className="text-sm text-[#66786E] mt-1">
+          <p className="text-sm text-[#52645A] mt-1">
             Inspect your current area, click any map point, or choose a neighborhood below
             to retrieve real local readings.
           </p>
@@ -133,10 +140,11 @@ export function MapPage({ state, onOpenLocationModal }: MapPageProps) {
         <div className="lg:col-span-8 rounded-xl border border-[#E1EAE4] bg-white overflow-hidden">
           <div
             ref={mapContainerRef}
+            role="region"
             className="h-[460px] w-full"
             aria-label="Interactive air quality map. Click any point to fetch air quality for those coordinates."
           />
-          <div className="border-t border-[#E1EAE4] px-4 py-3 text-xs text-[#66786E] flex flex-wrap items-center justify-between gap-2">
+          <div className="border-t border-[#E1EAE4] px-4 py-3 text-xs text-[#52645A] flex flex-wrap items-center justify-between gap-2">
             <span>
               Tip: Click anywhere on the map to retrieve real air-quality readings for
               exact coordinates.
@@ -149,20 +157,20 @@ export function MapPage({ state, onOpenLocationModal }: MapPageProps) {
 
         <div className="lg:col-span-4 space-y-4">
           <div className="rounded-xl border border-[#E1EAE4] bg-white p-5 space-y-3">
-            <h2 className="text-xs font-semibold text-[#66786E]">
+            <h2 className="text-xs font-semibold text-[#52645A]">
               Selected Monitoring Point
             </h2>
             <div>
               <p className="text-base font-semibold text-[#20332B]">{location.name}</p>
               {location.neighborhood && (
-                <p className="text-xs text-[#66786E]">{location.neighborhood}</p>
+                <p className="text-xs text-[#52645A]">{location.neighborhood}</p>
               )}
             </div>
             <div className="flex items-baseline gap-2.5 pt-1">
               <span className="text-3xl font-bold font-mono tabular-nums text-[#20332B]">
                 {snapshot?.aqi ?? '—'}
               </span>
-              <span className="text-xs text-[#66786E]">
+              <span className="text-xs text-[#52645A]">
                 {snapshot?.aqiScale === 'INDIA_NAQI' ? 'CPCB NAQI' : 'US EPA AQI'}
               </span>
             </div>
@@ -171,16 +179,16 @@ export function MapPage({ state, onOpenLocationModal }: MapPageProps) {
               scale={snapshot?.aqiScale ?? 'US_EPA'}
               compact
             />
-            <p className="text-xs text-[#66786E] pt-2 border-t border-[#E1EAE4]">
+            <p className="text-xs text-[#52645A] pt-2 border-t border-[#E1EAE4]">
               Source: {snapshot?.dataSource ?? 'Unavailable'}
             </p>
           </div>
 
           <div className="rounded-xl border border-[#E1EAE4] bg-white p-5 space-y-3">
-            <h2 className="text-xs font-semibold text-[#66786E]">
+            <h2 className="text-xs font-semibold text-[#52645A]">
               Accessible Location Directory
             </h2>
-            <p className="text-xs text-[#66786E]">
+            <p className="text-xs text-[#52645A]">
               Keyboard-accessible list of regional monitoring points:
             </p>
             <ul className="divide-y divide-[#E1EAE4] max-h-60 overflow-y-auto">
@@ -189,6 +197,7 @@ export function MapPage({ state, onOpenLocationModal }: MapPageProps) {
                   <button
                     type="button"
                     onClick={() => setLocation(p)}
+                    aria-current={p.id === location.id ? 'true' : undefined}
                     className={`w-full py-2.5 px-2 text-left text-sm flex items-center justify-between gap-2 rounded hover:bg-[#F5F8F6] transition-colors ${
                       p.id === location.id
                         ? 'font-semibold text-[#18543F]'
@@ -199,7 +208,7 @@ export function MapPage({ state, onOpenLocationModal }: MapPageProps) {
                       {p.name}
                       {p.neighborhood ? ` · ${p.neighborhood}` : ''}
                     </span>
-                    <span className="text-xs text-[#66786E] shrink-0">
+                    <span className="text-xs text-[#52645A] shrink-0">
                       {p.countryCode}
                     </span>
                   </button>

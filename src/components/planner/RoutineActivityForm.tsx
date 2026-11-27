@@ -193,7 +193,7 @@ export function RoutineActivityForm({
               <button
                 type="button"
                 onClick={onCancelEdit}
-                className="rounded-lg border border-[#E1EAE4] px-3.5 py-2 text-sm font-medium text-[#66786E] hover:text-[#20332B] transition-colors whitespace-nowrap"
+                className="rounded-lg border border-[#E1EAE4] px-3.5 py-2 text-sm font-medium text-[#52645A] hover:text-[#20332B] transition-colors whitespace-nowrap"
               >
                 Cancel
               </button>

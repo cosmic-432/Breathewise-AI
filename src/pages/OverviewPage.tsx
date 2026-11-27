@@ -58,7 +58,7 @@ export function OverviewPage({
           <h1 className="text-2xl font-bold tracking-tight text-[#20332B]">
             Air Quality Overview
           </h1>
-          <p className="text-sm text-[#66786E] mt-1">
+          <p className="text-sm text-[#52645A] mt-1">
             Verified local air conditions, pollutant readings, and actionable protection
             steps.
           </p>
@@ -117,33 +117,35 @@ export function OverviewPage({
         hourlyForecast={snapshot?.hourlyForecast ?? []}
       />
 
-      <section
-        aria-label="Next recommended tools"
-        className="grid grid-cols-1 md:grid-cols-3 gap-4"
-      >
-        {WORKFLOW_CARDS.map((card) => (
-          <div
-            key={card.title}
-            className="rounded-xl border border-[#E1EAE4] bg-white p-5 flex flex-col justify-between gap-4"
-          >
-            <div>
-              <h3 className="text-base font-semibold text-[#20332B]">{card.title}</h3>
-              <p className="text-sm text-[#66786E] mt-1.5 leading-relaxed">
-                {card.description}
-              </p>
+      <section aria-labelledby="workflow-links-heading">
+        <h2 id="workflow-links-heading" className="sr-only">
+          Next recommended tools
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {WORKFLOW_CARDS.map((card) => (
+            <div
+              key={card.title}
+              className="rounded-xl border border-[#E1EAE4] bg-white p-5 flex flex-col justify-between gap-4"
+            >
+              <div>
+                <h3 className="text-base font-semibold text-[#20332B]">{card.title}</h3>
+                <p className="text-sm text-[#52645A] mt-1.5 leading-relaxed">
+                  {card.description}
+                </p>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  onClick={() => onNavigate(card.target)}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-[#237A57] hover:text-[#18543F] transition-colors"
+                >
+                  <span>{card.cta}</span>
+                  <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                </button>
+              </div>
             </div>
-            <div>
-              <button
-                type="button"
-                onClick={() => onNavigate(card.target)}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-[#237A57] hover:text-[#18543F] transition-colors"
-              >
-                <span>{card.cta}</span>
-                <ArrowRight className="w-4 h-4" aria-hidden="true" />
-              </button>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </section>
     </div>
   );

@@ -11,7 +11,7 @@ export function PollutantGrid({ pollutants }: PollutantGridProps) {
         <h2 id="pollutants-heading" className="text-base font-semibold text-[#20332B]">
           Pollutant Concentrations
         </h2>
-        <span className="text-xs text-[#66786E]">
+        <span className="text-xs text-[#52645A]">
           Missing pollutants are marked unavailable individually — values are never
           invented.
         </span>
@@ -28,7 +28,7 @@ export function PollutantGrid({ pollutants }: PollutantGridProps) {
                 <span className="text-sm font-semibold text-[#20332B]">
                   {pollutant.code}
                 </span>
-                <span className="text-[11px] text-[#66786E]">
+                <span className="text-[11px] text-[#52645A]">
                   {pollutant.status === 'measured'
                     ? 'Measured'
                     : pollutant.status === 'estimated'
@@ -36,7 +36,7 @@ export function PollutantGrid({ pollutants }: PollutantGridProps) {
                       : 'Unavailable'}
                 </span>
               </div>
-              <p className="text-xs text-[#66786E] mt-0.5 line-clamp-1">
+              <p className="text-xs text-[#52645A] mt-0.5 line-clamp-1">
                 {pollutant.label}
               </p>
             </div>
@@ -47,10 +47,10 @@ export function PollutantGrid({ pollutants }: PollutantGridProps) {
                   <span className="text-xl font-bold font-mono tabular-nums text-[#20332B]">
                     {pollutant.value}
                   </span>
-                  <span className="text-xs text-[#66786E]">{pollutant.unit}</span>
+                  <span className="text-xs text-[#52645A]">{pollutant.unit}</span>
                 </div>
               ) : (
-                <span className="text-sm font-medium text-[#66786E]">Unavailable</span>
+                <span className="text-sm font-medium text-[#52645A]">Unavailable</span>
               )}
             </div>
           </div>

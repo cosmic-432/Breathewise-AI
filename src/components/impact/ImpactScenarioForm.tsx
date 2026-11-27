@@ -106,7 +106,9 @@ export function ImpactScenarioForm({
               max={500}
               value={distanceKm}
               onChange={(e) =>
-                onDistanceKmChange(Math.max(1, Number(e.target.value) || 1))
+                onDistanceKmChange(
+                  Math.max(1, Math.min(500, Number(e.target.value) || 1)),
+                )
               }
               className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm font-mono tabular-nums"
             />
@@ -194,7 +196,9 @@ export function ImpactScenarioForm({
               max={100}
               value={distanceKm}
               onChange={(e) =>
-                onDistanceKmChange(Math.max(1, Number(e.target.value) || 1))
+                onDistanceKmChange(
+                  Math.max(1, Math.min(100, Number(e.target.value) || 1)),
+                )
               }
               className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm font-mono tabular-nums"
             />
@@ -217,7 +221,9 @@ export function ImpactScenarioForm({
               min={1}
               max={5000}
               value={kwhSaved}
-              onChange={(e) => onKwhSavedChange(Math.max(1, Number(e.target.value) || 1))}
+              onChange={(e) =>
+                onKwhSavedChange(Math.max(1, Math.min(5000, Number(e.target.value) || 1)))
+              }
               className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] px-3 py-2 text-sm font-mono tabular-nums"
             />
           </div>
@@ -265,6 +271,9 @@ export function ImpactScenarioForm({
           </>
         )}
       </button>
+      <div className="sr-only" role="status" aria-live="polite">
+        {justLogged ? 'Sustainable action recorded and impact totals updated.' : ''}
+      </div>
     </section>
   );
 }

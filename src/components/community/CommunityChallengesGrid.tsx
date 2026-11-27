@@ -23,7 +23,7 @@ export function CommunityChallengesGrid({
       </h2>
 
       {loading ? (
-        <p className="text-sm text-[#66786E]">Loading community challenges...</p>
+        <p className="text-sm text-[#52645A]">Loading community challenges...</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {challenges.map((ch) => {
@@ -35,7 +35,7 @@ export function CommunityChallengesGrid({
                 className="rounded-xl border border-[#E1EAE4] bg-white p-5 flex flex-col justify-between gap-4"
               >
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between gap-2 text-xs text-[#66786E]">
+                  <div className="flex items-center justify-between gap-2 text-xs text-[#52645A]">
                     <span className="capitalize font-medium text-[#237A57]">
                       {ch.category}
                     </span>
@@ -45,7 +45,7 @@ export function CommunityChallengesGrid({
                     </span>
                   </div>
                   <h3 className="text-base font-semibold text-[#20332B]">{ch.title}</h3>
-                  <p className="text-sm text-[#66786E] leading-relaxed">
+                  <p className="text-sm text-[#52645A] leading-relaxed">
                     {ch.description}
                   </p>
                   <p className="text-xs text-[#20332B]/80">Goal: {ch.goalDescription}</p>

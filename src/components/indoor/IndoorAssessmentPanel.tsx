@@ -30,7 +30,7 @@ export function IndoorAssessmentPanel({
           >
             1. Measured Indoor Air Quality
           </h2>
-          <span className="text-xs text-[#66786E]">
+          <span className="text-xs text-[#52645A]">
             {baseline.measuredSection.hasSensorData
               ? 'User sensor reading'
               : 'No sensor connected'}
@@ -53,7 +53,7 @@ export function IndoorAssessmentPanel({
           >
             2. User-Reported Conditions &amp; Baseline Guidance
           </h2>
-          <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#66786E]">
+          <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#52645A]">
             {baseline.reportedConditionsSummary.map((line, idx) => (
               <li key={idx}>{line}</li>
             ))}
@@ -93,7 +93,7 @@ export function IndoorAssessmentPanel({
             {baseline.priorityActions.map((act) => (
               <li key={act.title} className="space-y-0.5">
                 <p className="text-sm font-semibold text-[#20332B]">{act.title}</p>
-                <p className="text-sm text-[#66786E] leading-relaxed">{act.detail}</p>
+                <p className="text-sm text-[#52645A] leading-relaxed">{act.detail}</p>
               </li>
             ))}
           </ul>
@@ -108,7 +108,7 @@ export function IndoorAssessmentPanel({
               Target CADR ≈ {baseline.recommendedCadrM3h} m³/h
             </span>
           </div>
-          <p className="text-sm text-[#66786E] leading-relaxed">
+          <p className="text-sm text-[#52645A] leading-relaxed">
             {baseline.purifierGuidance}
           </p>
         </div>
@@ -123,7 +123,7 @@ export function IndoorAssessmentPanel({
           <h2 id="ai-indoor-heading" className="text-sm font-semibold text-[#20332B]">
             3. AI-Generated Personalized Indoor Guidance
           </h2>
-          <span className="text-xs text-[#66786E]">Powered by Gemini</span>
+          <span className="text-xs text-[#52645A]">Powered by Gemini</span>
         </div>
 
         {aiError && (
@@ -138,7 +138,7 @@ export function IndoorAssessmentPanel({
         {aiAdvice ? (
           <StructuredAIResponseCard response={aiAdvice} />
         ) : (
-          <p className="text-sm text-[#66786E]">
+          <p className="text-sm text-[#52645A]">
             Click &ldquo;Get AI Indoor Plan&rdquo; above to receive a tailored
             room-by-room indoor air checklist combining your reported room details with
             today’s outdoor air quality.

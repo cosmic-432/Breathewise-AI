@@ -57,7 +57,7 @@ export function CurrentAqiHeroCard({
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-8 space-y-4">
-            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-[#66786E]">
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-[#52645A]">
               <span className="font-medium text-[#20332B]">
                 {location.name}
                 {location.neighborhood ? `, ${location.neighborhood}` : ''}
@@ -79,21 +79,20 @@ export function CurrentAqiHeroCard({
 
             <div className="flex flex-wrap items-end gap-5">
               <div>
-                <span className="text-xs font-medium text-[#66786E] block mb-1">
+                <span className="text-xs font-medium text-[#52645A] block mb-1">
                   {snapshot?.aqiScale === 'INDIA_NAQI'
                     ? 'Air Quality Index (CPCB NAQI)'
                     : 'Air Quality Index (US EPA)'}
                 </span>
                 <div className="flex items-baseline gap-3">
                   <span
-                    className="text-5xl font-bold font-mono tabular-nums tracking-tight"
-                    style={{ color: aqiInfo.hexColor }}
+                    className={`text-5xl font-bold font-mono tabular-nums tracking-tight ${aqiInfo.textClass}`}
                   >
                     {snapshot?.aqi !== null && snapshot?.aqi !== undefined
                       ? snapshot.aqi
                       : '—'}
                   </span>
-                  <span className="text-xs font-medium text-[#66786E]">
+                  <span className="text-xs font-medium text-[#52645A]">
                     {snapshot?.aqiStatus === 'measured'
                       ? 'Measured at station'
                       : snapshot?.aqiStatus === 'estimated'
@@ -109,7 +108,7 @@ export function CurrentAqiHeroCard({
                   scale={snapshot?.aqiScale ?? 'US_EPA'}
                 />
                 {snapshot?.dominantPollutant && (
-                  <p className="text-xs text-[#66786E]">
+                  <p className="text-xs text-[#52645A]">
                     Primary pollutant driver:{' '}
                     <span className="font-mono font-medium text-[#20332B]">
                       {snapshot.dominantPollutant}
@@ -123,7 +122,7 @@ export function CurrentAqiHeroCard({
               {aqiInfo.healthGuidance}
             </p>
 
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-2 border-t border-[#E1EAE4] text-xs text-[#66786E]">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-2 border-t border-[#E1EAE4] text-xs text-[#52645A]">
               <span>
                 Source:{' '}
                 <strong className="font-medium text-[#20332B]">
@@ -143,7 +142,7 @@ export function CurrentAqiHeroCard({
             </div>
 
             {snapshot?.notice && (
-              <p className="text-xs text-[#66786E] bg-[#F5F8F6] rounded-lg px-3.5 py-2.5 border border-[#E1EAE4]">
+              <p className="text-xs text-[#52645A] bg-[#F5F8F6] rounded-lg px-3.5 py-2.5 border border-[#E1EAE4]">
                 {snapshot.notice}
               </p>
             )}
@@ -151,17 +150,17 @@ export function CurrentAqiHeroCard({
 
           <div className="lg:col-span-4 lg:border-l lg:border-[#E1EAE4] lg:pl-6 space-y-5">
             <div>
-              <h2 className="text-xs font-semibold text-[#66786E] mb-3">
+              <h2 className="text-xs font-semibold text-[#52645A] mb-3">
                 Local Weather Conditions
               </h2>
               {snapshot?.weather.status === 'unavailable' ? (
-                <p className="text-sm text-[#66786E]">
+                <p className="text-sm text-[#52645A]">
                   Reliable weather readings are currently unavailable for this location.
                 </p>
               ) : (
                 <dl className="grid grid-cols-3 gap-3">
                   <div>
-                    <dt className="text-xs text-[#66786E] flex items-center gap-1">
+                    <dt className="text-xs text-[#52645A] flex items-center gap-1">
                       <Thermometer className="w-3.5 h-3.5" aria-hidden="true" />
                       Temp
                     </dt>
@@ -170,7 +169,7 @@ export function CurrentAqiHeroCard({
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-[#66786E] flex items-center gap-1">
+                    <dt className="text-xs text-[#52645A] flex items-center gap-1">
                       <Droplets className="w-3.5 h-3.5" aria-hidden="true" />
                       Humidity
                     </dt>
@@ -182,7 +181,7 @@ export function CurrentAqiHeroCard({
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-[#66786E] flex items-center gap-1">
+                    <dt className="text-xs text-[#52645A] flex items-center gap-1">
                       <Wind className="w-3.5 h-3.5" aria-hidden="true" />
                       Wind
                     </dt>
@@ -198,7 +197,7 @@ export function CurrentAqiHeroCard({
             </div>
 
             <div className="border-t border-[#E1EAE4] pt-4">
-              <h2 className="text-xs font-semibold text-[#66786E] mb-2">
+              <h2 className="text-xs font-semibold text-[#52645A] mb-2">
                 Short-Term Trend
               </h2>
               <div className="flex items-start gap-2.5 text-sm text-[#20332B]">
@@ -214,7 +213,7 @@ export function CurrentAqiHeroCard({
                   />
                 ) : (
                   <Minus
-                    className="w-4 h-4 text-[#66786E] mt-0.5 shrink-0"
+                    className="w-4 h-4 text-[#52645A] mt-0.5 shrink-0"
                     aria-hidden="true"
                   />
                 )}

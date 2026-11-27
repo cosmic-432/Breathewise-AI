@@ -3,13 +3,10 @@ import { apiClient } from '../api/client.ts';
 import { AiGuidanceCard } from '../components/AiGuidanceCard.tsx';
 import { CommunityChallengesGrid } from '../components/community/CommunityChallengesGrid.tsx';
 import { CommunityReportsSection } from '../components/community/CommunityReportsSection.tsx';
+import { useAiGuidance } from '../hooks/useAiGuidance.ts';
 import type { BreatheWiseState } from '../hooks/useBreatheWiseState.ts';
 import { localStore } from '../storage/localStore.ts';
-import type {
-  CommunityChallenge,
-  CommunityReport,
-  StructuredAIResponse,
-} from '../types/index.ts';
+import type { CommunityChallenge, CommunityReport } from '../types/index.ts';
 
 interface CommunityPageProps {
   state: BreatheWiseState;
@@ -30,10 +27,12 @@ export function CommunityPage({ state }: CommunityPageProps) {
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const [submittingReport, setSubmittingReport] = useState(false);
-  const [reportFeedback, setReportFeedback] = useState<string | null>(null);
+  const [reportFeedback, setReportFeedback] = useState<{
+    message: string;
+    isError: boolean;
+  } | null>(null);
 
-  const [aiCampaign, setAiCampaign] = useState<StructuredAIResponse | null>(null);
-  const [loadingCampaign, setLoadingCampaign] = useState(false);
+  const aiCampaign = useAiGuidance();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -96,39 +95,31 @@ export function CommunityPage({ state }: CommunityPageProps) {
     try {
       const res = await apiClient.submitCommunityReport(payload);
       setReports(res.summary.reports);
-      setReportFeedback(
-        'Posted to the community feed with an unverified user-submission label.',
-      );
+      setReportFeedback({
+        message: 'Posted to the community feed with an unverified user-submission label.',
+        isError: false,
+      });
       return true;
     } catch (err) {
-      setReportFeedback(
-        err instanceof Error ? err.message : 'Unable to submit community post.',
-      );
+      setReportFeedback({
+        message: err instanceof Error ? err.message : 'Unable to submit community post.',
+        isError: true,
+      });
       return false;
     } finally {
       setSubmittingReport(false);
     }
   };
 
-  const handleGenerateCampaign = async () => {
-    setLoadingCampaign(true);
-    try {
-      const response = await apiClient.askAssistant({
+  const handleGenerateCampaign = () =>
+    aiCampaign.requestGuidance(
+      {
         question: `Suggest a practical, privacy-respecting neighborhood or school clean-air awareness campaign for residents in ${location.name}, focusing on no-idling zones, zero leaf burning, and shared commuting.`,
         mode: 'community',
         snapshot,
-      });
-      setAiCampaign(response);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Unable to generate community campaign ideas.',
-      );
-    } finally {
-      setLoadingCampaign(false);
-    }
-  };
+      },
+      'Unable to generate community campaign ideas.',
+    );
 
   return (
     <div className="space-y-6">
@@ -137,7 +128,7 @@ export function CommunityPage({ state }: CommunityPageProps) {
           <h1 className="text-2xl font-bold tracking-tight text-[#20332B]">
             Community Action Hub
           </h1>
-          <p className="text-sm text-[#66786E] mt-1">
+          <p className="text-sm text-[#52645A] mt-1">
             Voluntary low-emission challenges, clean-air tips, and neighborhood
             initiatives with genuine participation tracking.
           </p>
@@ -146,10 +137,10 @@ export function CommunityPage({ state }: CommunityPageProps) {
         <button
           type="button"
           onClick={() => void handleGenerateCampaign()}
-          disabled={loadingCampaign}
+          disabled={aiCampaign.loading}
           className="inline-flex items-center justify-center rounded-lg bg-[#237A57] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#18543F] disabled:opacity-50 transition-colors whitespace-nowrap shrink-0"
         >
-          {loadingCampaign ? 'Drafting Campaign Idea...' : 'AI Campaign Idea'}
+          {aiCampaign.loading ? 'Drafting Campaign Idea...' : 'AI Campaign Idea'}
         </button>
       </div>
 
@@ -157,29 +148,38 @@ export function CommunityPage({ state }: CommunityPageProps) {
       <div className="rounded-xl border border-[#E1EAE4] bg-white p-5 flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-6">
           <div>
-            <p className="text-xs text-[#66786E]">Verified Voluntary Participants</p>
+            <p className="text-xs text-[#52645A]">Verified Voluntary Participants</p>
             <p className="text-2xl font-bold font-mono tabular-nums text-[#18543F]">
               {totalParticipants}
             </p>
           </div>
           <div className="border-l border-[#E1EAE4] pl-6">
-            <p className="text-xs text-[#66786E]">Community Actions Logged</p>
+            <p className="text-xs text-[#52645A]">Community Actions Logged</p>
             <p className="text-2xl font-bold font-mono tabular-nums text-[#20332B]">
               {totalActions}
             </p>
           </div>
         </div>
-        <p className="text-xs text-[#66786E] max-w-md">
+        <p className="text-xs text-[#52645A] max-w-md">
           All counts reflect real recorded actions on this BreatheWise instance — we never
           fabricate participation figures or expose home addresses.
         </p>
       </div>
 
+      {error && (
+        <div
+          role="alert"
+          className="rounded-xl border border-[#C94D53]/40 bg-[#FBECEE] p-4 text-sm text-[#962D32]"
+        >
+          {error}
+        </div>
+      )}
+
       <AiGuidanceCard
         title="Gemini Community Campaign Blueprint"
-        response={aiCampaign}
-        error={error}
-        onDismiss={() => setAiCampaign(null)}
+        response={aiCampaign.response}
+        error={aiCampaign.error}
+        onDismiss={aiCampaign.dismiss}
       />
 
       <CommunityChallengesGrid
@@ -196,7 +196,8 @@ export function CommunityPage({ state }: CommunityPageProps) {
         defaultAreaLabel={location.name}
         reports={reports}
         submittingReport={submittingReport}
-        reportFeedback={reportFeedback}
+        reportFeedback={reportFeedback?.message ?? null}
+        reportFeedbackIsError={reportFeedback?.isError ?? false}
         onSubmitReport={handleSubmitReport}
       />
     </div>

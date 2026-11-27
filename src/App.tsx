@@ -102,6 +102,7 @@ export default function App() {
             onClick={() => setMobileMenuOpen(false)}
           />
           <div
+            id="mobile-navigation-drawer"
             ref={mobileDrawerRef}
             role="dialog"
             aria-modal="true"
@@ -112,7 +113,7 @@ export default function App() {
               type="button"
               onClick={() => setMobileMenuOpen(false)}
               aria-label="Close navigation menu"
-              className="absolute right-3 top-4 inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#66786E] hover:bg-[#F5F8F6]"
+              className="absolute right-3 top-4 inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#52645A] hover:bg-[#F5F8F6]"
             >
               <X className="w-5 h-5" aria-hidden="true" />
             </button>
@@ -131,12 +132,13 @@ export default function App() {
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open navigation menu"
               aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation-drawer"
               className="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg text-[#20332B] hover:bg-[#F5F8F6] shrink-0"
             >
               <Menu className="w-5 h-5" aria-hidden="true" />
             </button>
             <div className="flex items-center gap-2 text-sm min-w-0">
-              <span className="text-[#66786E] hidden sm:inline whitespace-nowrap">
+              <span className="text-[#52645A] hidden sm:inline whitespace-nowrap">
                 BreatheWise AI
               </span>
               <span aria-hidden="true" className="text-[#E1EAE4] hidden sm:inline">
@@ -160,12 +162,13 @@ export default function App() {
 
         <main
           id="main-content"
-          className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8"
+          tabIndex={-1}
+          className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 focus:outline-none"
         >
           <ErrorBoundary key={activeSection}>
             <Suspense
               fallback={
-                <div className="rounded-xl border border-[#E1EAE4] bg-white p-8 text-sm text-[#66786E]">
+                <div className="rounded-xl border border-[#E1EAE4] bg-white p-8 text-sm text-[#52645A]">
                   Loading section...
                 </div>
               }

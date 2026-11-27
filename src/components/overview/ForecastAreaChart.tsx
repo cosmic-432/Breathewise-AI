@@ -30,8 +30,8 @@ export function ForecastAreaChart({ chartData }: ForecastAreaChartProps) {
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="#E1EAE4" />
-        <XAxis dataKey="time" tick={{ fill: '#66786E', fontSize: 12 }} tickLine={false} />
-        <YAxis tick={{ fill: '#66786E', fontSize: 12 }} tickLine={false} />
+        <XAxis dataKey="time" tick={{ fill: '#52645A', fontSize: 12 }} tickLine={false} />
+        <YAxis tick={{ fill: '#52645A', fontSize: 12 }} tickLine={false} />
         <Tooltip
           contentStyle={{
             backgroundColor: '#FFFFFF',

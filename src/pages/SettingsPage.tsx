@@ -47,7 +47,7 @@ export function SettingsPage({ state, onOpenLocationModal }: SettingsPageProps) 
         <h1 className="text-2xl font-bold tracking-tight text-[#20332B]">
           Settings &amp; Privacy
         </h1>
-        <p className="text-sm text-[#66786E] mt-1">
+        <p className="text-sm text-[#52645A] mt-1">
           Manage display units, emission factor region, active location, and full control
           over your stored data.
         </p>
@@ -74,7 +74,7 @@ export function SettingsPage({ state, onOpenLocationModal }: SettingsPageProps) 
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E1EAE4] pb-4">
           <div>
             <p className="text-sm font-medium text-[#20332B]">Active Location</p>
-            <p className="text-xs text-[#66786E] mt-0.5">
+            <p className="text-xs text-[#52645A] mt-0.5">
               {location.name}
               {location.neighborhood ? ` · ${location.neighborhood}` : ''} ·{' '}
               {location.country}
@@ -155,7 +155,7 @@ export function SettingsPage({ state, onOpenLocationModal }: SettingsPageProps) 
           Privacy, Data Handling &amp; Transparency
         </h2>
 
-        <ul className="space-y-2 text-sm text-[#66786E] list-disc pl-5">
+        <ul className="space-y-2 text-sm text-[#52645A] list-disc pl-5">
           <li>
             <strong className="text-[#20332B]">Local-first household storage:</strong>{' '}
             Your routines, indoor setup, family preferences, and history snapshots are

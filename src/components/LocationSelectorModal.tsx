@@ -27,12 +27,7 @@ export function LocationSelectorModal({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
-  useFocusTrap(dialogRef, isOpen, onClose);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    inputRef.current?.focus();
-  }, [isOpen]);
+  useFocusTrap(dialogRef, isOpen, onClose, inputRef);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -129,7 +124,7 @@ export function LocationSelectorModal({
             >
               Choose Your Location
             </h2>
-            <p className="text-xs text-[#66786E] mt-0.5">
+            <p className="text-xs text-[#52645A] mt-0.5">
               Search any city or neighborhood manually, or opt in to device location.
             </p>
           </div>
@@ -137,7 +132,7 @@ export function LocationSelectorModal({
             type="button"
             onClick={onClose}
             aria-label="Close location selector"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#66786E] hover:bg-[#F5F8F6] hover:text-[#20332B] transition-colors"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#52645A] hover:bg-[#F5F8F6] hover:text-[#20332B] transition-colors"
           >
             <X className="w-5 h-5" aria-hidden="true" />
           </button>
@@ -153,7 +148,7 @@ export function LocationSelectorModal({
             </label>
             <div className="relative">
               <Search
-                className="w-4 h-4 text-[#66786E] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                className="w-4 h-4 text-[#52645A] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
                 aria-hidden="true"
               />
               <input
@@ -170,7 +165,7 @@ export function LocationSelectorModal({
                   }
                 }}
                 placeholder="e.g., Delhi, Gurugram, Pune, Bengaluru, London..."
-                className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] pl-10 pr-4 py-2.5 text-sm text-[#20332B] placeholder:text-[#66786E] focus:bg-white focus:border-[#237A57] focus:ring-2 focus:ring-[#237A57]/25"
+                className="w-full rounded-lg border border-[#E1EAE4] bg-[#F5F8F6] pl-10 pr-4 py-2.5 text-sm text-[#20332B] placeholder:text-[#52645A] focus:bg-white focus:border-[#237A57] focus:ring-2 focus:ring-[#237A57]/25"
               />
             </div>
 
@@ -184,7 +179,7 @@ export function LocationSelectorModal({
                 <LocateFixed className="w-4 h-4" aria-hidden="true" />
                 {locating ? 'Requesting location...' : 'Use device location (optional)'}
               </button>
-              <span className="text-xs text-[#66786E]">
+              <span className="text-xs text-[#52645A]">
                 Coordinates are used only to query air quality and are never published.
               </span>
             </div>
@@ -201,13 +196,16 @@ export function LocationSelectorModal({
 
           {query.trim().length >= 2 && (
             <div>
-              <h3 className="text-xs font-semibold text-[#66786E] mb-2">
+              <h3
+                aria-live="polite"
+                className="text-xs font-semibold text-[#52645A] mb-2"
+              >
                 {searching
                   ? 'Searching locations...'
                   : `Search Results (${results.length})`}
               </h3>
               {!searching && results.length === 0 ? (
-                <p className="text-sm text-[#66786E] py-3">
+                <p className="text-sm text-[#52645A] py-3">
                   No matching cities found for &ldquo;{query.trim()}&rdquo;. Try a broader
                   city name.
                 </p>
@@ -228,11 +226,11 @@ export function LocationSelectorModal({
                             {item.name}
                             {item.neighborhood ? ` — ${item.neighborhood}` : ''}
                           </div>
-                          <div className="text-xs text-[#66786E]">
+                          <div className="text-xs text-[#52645A]">
                             {[item.region, item.country].filter(Boolean).join(' · ')}
                           </div>
                         </div>
-                        <span className="text-xs font-mono tabular-nums text-[#66786E] shrink-0">
+                        <span className="text-xs font-mono tabular-nums text-[#52645A] shrink-0">
                           {item.latitude.toFixed(2)}, {item.longitude.toFixed(2)}
                         </span>
                       </button>
@@ -244,7 +242,7 @@ export function LocationSelectorModal({
           )}
 
           <div>
-            <h3 className="text-xs font-semibold text-[#66786E] mb-2">
+            <h3 className="text-xs font-semibold text-[#52645A] mb-2">
               Quick-Select Cities &amp; Neighborhoods
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -254,6 +252,7 @@ export function LocationSelectorModal({
                   <button
                     key={loc.id}
                     type="button"
+                    aria-pressed={isSelected}
                     onClick={() => {
                       onSelect(loc);
                       onClose();
@@ -272,7 +271,7 @@ export function LocationSelectorModal({
                       <div className="text-sm font-medium text-[#20332B] truncate">
                         {loc.name}
                       </div>
-                      <div className="text-xs text-[#66786E] truncate">
+                      <div className="text-xs text-[#52645A] truncate">
                         {loc.neighborhood ? `${loc.neighborhood} · ` : ''}
                         {loc.country}
                       </div>
